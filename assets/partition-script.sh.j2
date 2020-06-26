@@ -15,9 +15,10 @@
 
 PARTITION_COUNT={{ partitions_per_device }}
 
-for NVME_DRIVE in /dev/nvme*n1
+for NVME_DRIVE in $(ls /dev/nvme0n* | grep -v p)
 do
-	if [ ! $NVME_DRIVE == /dev/nvme0n1 ]
+	# In AWS we have to filter out the boot nvme volume, but we don't on GCP
+	if [ 1 ]
 	then
 		PARTED_SCRIPT="${NVME_DRIVE} mklabel gpt"
 		for count in $(seq 1 $PARTITION_COUNT)
@@ -27,7 +28,7 @@ do
 			PARTED_SCRIPT="$PARTED_SCRIPT mkpart primary ${START}% ${END}%"
 		done
 		echo "Partitioning $NVME_DRIVE into $PARTITION_COUNT partitions"
-		sudo parted -a opt --script $PARTED_SCRIPT
+		parted -a opt --script $PARTED_SCRIPT
 	fi
 done
 

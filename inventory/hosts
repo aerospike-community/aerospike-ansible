@@ -1,11 +1,15 @@
 [local]
 localhost ansible_python_interpreter=python
 
-[aerospike_cluster:children]
-tag_group_aerospike_cluster
+[aerospike_cluster]
+; for gcp add your cluster hostnames below e.g.
+; aero-01
+; aero-02
+; aero-03
 
-[aerospike_client:children]
-tag_group_aerospike_client
+[aerospike_client]
+; for gcp add your client hostnames below e.g.
+; aero-client-01 
 
 [aerospike_act:children]
 tag_group_aerospike_act

@@ -16,20 +16,9 @@
   - name: "Setup {{ instance_function }} instance vars"
     include_vars: modules/instance-setup-vars.yml
 
-  - name: "Setup {{ instance_function }} instances"
-    import_tasks: modules/instance-setup.yml
-
-  - name: Get cluster instance info
-    ec2_instance_info:
-      region: "{{ aws_region }}"
-      filters:
-        instance-state-name: [ "pending", "running" ]  
-        "tag:group": "{{ cluster_tag }}"   
-    register: cluster_info
-
   - name: Cache cluster ip address for use in benchmarking scripts
     set_fact:
-      cluster_node_ip: "{{ cluster_info.instances[0].private_ip_address }}"
+      cluster_node_ip: "{{groups[cluster_tag][0]}}"
       cacheable: yes
 
   - meta: refresh_inventory

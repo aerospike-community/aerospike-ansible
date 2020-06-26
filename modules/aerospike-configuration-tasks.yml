@@ -1,6 +1,6 @@
 - name: Get cluster ip addresses
   set_fact:
-    cluster_ip_addresses: "{{ cluster_ip_addresses }} + [ '{{ hostvars[item].ec2_private_ip_address }}' ]"
+    cluster_ip_addresses: "{{ cluster_ip_addresses }} + [ '{{ hostvars[item].ansible_facts.all_ipv4_addresses[0] }}' ]"
   with_items: 
     "{{ groups.aerospike_cluster }}"
   vars:
@@ -8,7 +8,7 @@
 
 - name: "Get available nvme drives"
   shell:
-    cmd: "ls /dev/nvme*p* | grep -v nvme0"
+    cmd: "ls /dev/nvme*p*"
   register: nvme_drives_list_output
   
 - name: Store nvme drive list as a fact
@@ -23,7 +23,7 @@
     owner: root
     group: root
   vars:
-    ip_address: "{{ hostvars[inventory_hostname].ec2_private_ip_address }}"    
+    ip_address: "{{ hostvars[inventory_hostname].ansible_facts.all_ipv4_addresses[0] }}"    
 
 - block:
   - name: Check whether encryption key exists already
