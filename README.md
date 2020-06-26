@@ -161,6 +161,10 @@ Make use of the ```gcp``` branch of this repo as some small tweaks were needed t
 Then create your cluster/client/monitoring instances maybe using VM templates (a GCP thing) to ensure consistency, give them names and then add the host names to 
 the ```inventory/hosts``` file. Examples of what to do are given in the ```inventory/hosts``` in the ```gcp``` branch.
 
+## TLS
+
+TLS enabled Aerospike is built using pre-built key pairs, which are exposed in this project - see [private](assets/certificates/private). These keys are not to be used for production purposes. You will however see instructions in [certificates](assets/certificates) which tell you how to create your own, which can be used to replace the ones provided.
+
 ## SSH
 
 If you see
