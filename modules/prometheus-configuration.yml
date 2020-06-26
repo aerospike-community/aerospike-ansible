@@ -1,0 +1,25 @@
+- name: Get cluster ip addresses
+  set_fact:
+    cluster_ip_addresses: "[]"
+    client_ip_addresses: []
+
+- name: Get cluster ip addresses
+  set_fact:
+    cluster_ip_addresses: "{{ cluster_ip_addresses }} + [ '{{ hostvars[item].ec2_private_ip_address }}' ]"
+  with_items: 
+    "{{ groups.aerospike_cluster }}"
+
+- name: Get client ip addresses
+  set_fact:
+    client_ip_addresses: "{{ client_ip_addresses }} + [ '{{ hostvars[item].ec2_private_ip_address }}' ]"
+  with_items: 
+    "{{ groups.aerospike_client }}"
+
+- name: Prometheus config file
+  template:
+    src: "assets/prometheus.yml.j2"
+    dest: "{{prometheus_config_directory}}/prometheus.yml"
+    mode: '0644'
+    owner: root
+    group: root    
+

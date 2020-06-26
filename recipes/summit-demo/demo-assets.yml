@@ -1,0 +1,43 @@
+- name: sandbox
+  hosts: "aerospike_client"
+  gather_facts: yes 
+  become: no
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: ../../vars
+    
+  - name: Some magic to help us install nodejs
+    shell: |
+      curl --silent --location https://rpm.nodesource.com/setup_10.x | sudo bash -
+    become: yes
+
+  - name: Install nodejs
+    package:
+      name:
+        - nodejs
+    become: yes
+
+  - name: Copy metric service assets
+    copy:
+      src: "../../assets/benchmarking-metrics-service"
+      dest: "{{ ansible_env.HOME }}"
+      mode: 0755
+      directory_mode: 0755
+
+- name: Set up Prometheus / Grafana 
+  hosts: "aerospike_monitoring"
+  gather_facts: true
+  become: yes
+  tasks:
+  - name: Add Summit Demo dashboards
+    copy:
+      src: "../../assets/grafana/summit-demo/{{ item }}"
+      dest: "/var/lib/grafana/dashboards"
+      owner: root
+      group: root
+      mode: 0777
+    loop:
+    - Summit-Talk-01.json
+    - Summit-Talk-02.json
+    - Summit-Talk-03.json

@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# This the separator we will be working with
+
+# Start with asinfo output
+ASINFO="asinfo {% if tls_enabled %}--tls-enable --tls-name={{ cluster_name }} --tls-cafile=/etc/aerospike/certs/ca.crt -p {{ tls_service_port }} {% endif %}"
+while [[ $($ASINFO -v 'cluster-stable:') =~ ^ERROR ]]
+do 
+	sleep 5
+done
+
+STRING=$($ASINFO -v 'roster:')
+NS=$(echo $STRING | sed 's/^ns=\([^:]*\).*$/\1/')
+
+# Extract just the observed nodes
+nodesString=$(echo $STRING | sed 's/^.*observed_nodes\=\(.*\)$/\1/')
+
+asInfoCommand="\"roster-set:namespace=${NS}\;nodes=${nodesString}\""
+$ASINFO -v "$asInfoCommand"
+
+if [ $? -eq 0 ]
+then
+	echo "Roster set"
+else
+	echo "Error occurred"
+	exit 1
+fi
+
+asadm {% if tls_enabled %}--tls-enable --tls-name={{ cluster_name }} --tls-cafile=/etc/aerospike/certs/ca.crt -p {{ tls_service_port }} {% endif %} -e 'asinfo -v "recluster:"'
+$ASINFO -v 'roster:'
+echo "Roster set and reclustered"
+

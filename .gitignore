@@ -1,0 +1,8 @@
+venv
+.aws.pem
+assets/act/act-configuration/*
+sandbox.yml
+assets/features.conf
+scripts
+credentials
+tmp

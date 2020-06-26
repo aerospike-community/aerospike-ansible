@@ -1,0 +1,15 @@
+- name: "Copy Aerospike configuration to servers and restart"
+  hosts: "aerospike_cluster"
+  gather_facts: true
+  become: yes
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars
+    
+  - name: aerospike.conf
+    import_tasks: modules/aerospike-configuration-tasks.yml
+
+  - name: Restart Aerospike service
+    shell: 
+      cmd: "service aerospike restart"

@@ -1,0 +1,29 @@
+---
+- name: Full set up of an Aerospike environment in AWS - including VPC/subnets/routes/security groups/instances
+  hosts: local
+  connection: local
+  gather_facts: no
+  vars:
+    instance_tag: "{{ cluster_tag }}"
+    instance_count: "{{ cluster_hosts_per_az }}"    
+    instance_function: cluster
+    vpc_tag: "{{ cluster_tag }}"
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars
+    
+  - name: "Setup VPC"
+    include_tasks: modules/vpc-setup.yml
+
+  - name: "Setup Instances"
+    include_tasks: modules/instance_create_using_az.yml
+    with_items: "{{ cluster_az_list }}"
+    
+  - meta: refresh_inventory
+
+  - name: "Setup {{ instance_function }} instance vars"
+    include_vars: modules/instance-setup-vars.yml
+
+  - name: "Utility script setup"
+    import_tasks: modules/utility-script-setup.yml

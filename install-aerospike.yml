@@ -1,0 +1,138 @@
+---
+- name: Install Aerospike
+  hosts: "aerospike_cluster"
+  gather_facts: true
+  become: yes
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars
+    
+  - name: Get service facts
+    service_facts:
+
+  - block:
+    - debug: 
+        msg: "Aerospike service is not installed - executing install steps"
+
+    - block:
+      - name: "stat {{ feature_key_path }}"
+        local_action: "stat path={{ feature_key_path }}"
+        become: no
+        register: feature_key_meta
+
+      - name: "Check feature key {{ feature_key_path }} exists"
+        fail:
+          msg: "Specified feature key {{ feature_key_path }} not found"
+        when: not feature_key_meta.stat.exists    
+      when: enterprise 
+
+    - name: Check whether download exists
+      stat:
+       path: "{{ download_path }}"
+      register: stat_download_path
+
+    - name: Download Aerospike {{ 'Enterprise' if enterprise else 'Community' }}, version = {{ aerospike_version }}, distribution = {{ aerospike_distribution }} if not already downloaded
+      get_url:
+       url: "{{ download_url }}"
+       dest: "{{ download_path }}"
+      when: not stat_download_path.stat.exists 
+
+    - name: Unpack installer
+      unarchive:
+       remote_src: "yes"
+       src: "{{ download_path }}"
+       dest: "{{ download_file_dir }}"
+       list_files: true
+      register: result
+
+    - name: Get install directory
+      set_fact:
+       install_directory: "{{ result.files[0] }}"
+
+    - name: "Install Aerospike with strong consistency = {{ strong_consistency }}, tls = {{ tls_enabled }}, encryption at rest = {{ encryption_at_rest }}"
+      command:
+        chdir: "{{ download_file_dir }}/{{ install_directory }}"
+        cmd: "{{ download_file_dir }}/{{ install_directory }}/asinstall"
+
+    - name: "Create {{ partition_script_name }} script"
+      template:
+        src: "assets/{{ partition_script_name }}.j2"
+        dest: "/tmp/{{ partition_script_name }}"
+        mode: 0755
+
+    - name: "Partition nvme drives"
+      shell: "/tmp/{{ partition_script_name }}"
+
+    - name: aerospike.conf
+      import_tasks: modules/aerospike-configuration-tasks.yml
+    
+    - block:
+      - name: Feature key
+        copy:
+          src: "{{ feature_key_path }}"
+          dest: /etc/aerospike/features.conf
+          owner: root
+          group: root
+          mode: '0644'        
+      when: enterprise 
+
+    - import_tasks: modules/prometheus-exporter-install.yml
+      when: monitoring_enabled
+
+    - name: Start Aerospike service
+      shell: 
+        cmd: "service aerospike start"
+
+    - block:
+      - name: Copy roster set script
+        template:
+          src: "assets/strong-consistency/roster-set.sh.j2"
+          dest: "/tmp/roster-set.sh"
+          mode: "0755"
+
+      - name: "Set roster"
+        shell: "/tmp/roster-set.sh"
+
+      when: strong_consistency 
+
+    - name: Installation complete message
+      debug: 
+        msg: "Aerospike install complete"
+
+    when: hostvars[inventory_hostname].services[aerospike_service_name] is not defined
+
+  - block:
+    - name: Installation previously completed message
+      debug: 
+        msg: "Aerospike is already installed - not re-installing"
+    when: hostvars[inventory_hostname].services[aerospike_service_name] is defined
+
+  # May not be available as standard - this is the case on GCP
+  - name: Install sysstat
+    package:
+      name:
+        - sysstat
+      state: latest
+    become: yes
+
+- name: Update monitoring if enabled
+  hosts: "aerospike_monitoring"
+  gather_facts: true
+  become: yes
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars
+    
+  - name: Get service facts
+    service_facts:
+
+  # When Prometheus is installed, we update the config file - might be necessary as we have added nodes
+  - import_tasks: modules/prometheus-configuration.yml
+    when: hostvars[inventory_hostname].services[prometheus_service_name] is defined
+
+  - name: Restart prometheus
+    service:
+      name: prometheus
+      state: restarted

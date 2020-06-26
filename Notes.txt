@@ -1,0 +1,75 @@
+Ansible
+-------
+
+Enhance README - IAM / virtualenv
+Update README to include details of client
+Separate repo for ACT?
+Put demo stuff in separate branch. Include scripts
+Change command prompt so we see function on line ( quick ssh )
+Lock security group to your own ip
+Don't re-partition
+Secure Grafana with a password
+Parameterize ec2 ssh user
+
+Cosmetic
+========
+
+Look at whitespacing in templates
+
+Nice to have
+============
+
+Refactor node-id generation to only do this if we're working with ip addresses
+Dockerize it to simplify setup?
+
+
+When Finishing
+===============
+
+Need to check everything works when tls_enabled=false
+Bare install i.e. not from your Mac
+
+Done
+====
+
+Check what happens with different distributions
+AMI lookup, or at least comment what is in all.yml
+Show public and private ip addresses
+Loop over scripts when copying
+Wait while initializing
+Instance spin up
+Need to iterate through a list of ip addresses to prepare conf file
+Shows 'downloading enterprise' rather than this being configurable - community / enterprise
+Cleanup - check .gitignore for generated assets
+Add get-ip-addresses to setup script
+Add an ssh utility script
+Turn ssh script into a template
+Disk partitioning
+Add disk partitions to conf file
+Need to stop service in teardown
+Change application_tag to cluster_tag
+Auto-set memory in namespace
+Check variable precedence ( so can I over-ride variables in all.yml - eg crypto / enterprise ) - yes you can
+
+
+Output checked
+==============
+
+teardown
+setup
+get-ip-addresses
+install
+install
+
+Pending
+=======
+
+reload
+
+TLS
+===
+
+JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.242.b08-0.amzn2.0.1.x86_64
+scp -i .aws.pem assets/certificates/certs/ca.crt ${AERO_CLIENT_IPS[0]}:/tmp 
+sudo keytool -import -trustcacerts -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -alias aerospike_ansible -import -file /tmp/ca.crt 
+aql --tls-enable --tls-name=aerospike_ansible_demo_cluster --tls-cafile=/etc/aerospike/certs/ca.crt -p 4333

@@ -1,0 +1,44 @@
+---
+- name: Quiesce + Stop Aeropsike
+  hosts: "{{ host_group }}"
+  gather_facts: true
+  become: yes
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars      
+
+  - name: Quiesce and stop Aerospike service
+    shell: |
+      asinfo -v 'quiesce:'
+      asadm -e "asinfo -v 'recluster:'"
+      sleep 10
+      service aerospike stop
+
+- name: Terminate instances
+  hosts: local
+  connection: local
+  gather_facts: false
+  become: no
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars      
+
+  - name: "Terminate {{ host_group }} instances"
+    ec2:
+      state: absent
+      region: "{{ aws_region }}"
+      instance_ids: "{{ hostvars[item].ec2_id }}"
+    loop: "{{ groups[host_group] }}"
+
+- name: Update Prometheus / Grafana 
+  hosts: "aerospike_monitoring"
+  gather_facts: true
+  become: yes
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars      
+
+  - import_tasks: modules/prometheus-configuration.yml

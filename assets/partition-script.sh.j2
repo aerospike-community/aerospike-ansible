@@ -1,0 +1,33 @@
+#!/bin/bash
+
+############################################################################
+#
+#	Script-name {{ partition_script_name }}
+# 
+# 	Author : Ken Tune
+# 	Date : 2020-03-20
+# 
+#	Description : Splits AWS NVMe drives (/dev/nvme*n1) in $PARTITION_COUNT partitions
+#
+#	Usage : {{ partition_script_name }}
+# 
+############################################################################
+
+PARTITION_COUNT={{ partitions_per_device }}
+
+for NVME_DRIVE in /dev/nvme*n1
+do
+	if [ ! $NVME_DRIVE == /dev/nvme0n1 ]
+	then
+		PARTED_SCRIPT="${NVME_DRIVE} mklabel gpt"
+		for count in $(seq 1 $PARTITION_COUNT)
+		do
+			START=$(( ( $count -1 ) * 100 / $PARTITION_COUNT ))
+			END=$(( $count * 100 / $PARTITION_COUNT ))
+			PARTED_SCRIPT="$PARTED_SCRIPT mkpart primary ${START}% ${END}%"
+		done
+		echo "Partitioning $NVME_DRIVE into $PARTITION_COUNT partitions"
+		sudo parted -a opt --script $PARTED_SCRIPT
+	fi
+done
+

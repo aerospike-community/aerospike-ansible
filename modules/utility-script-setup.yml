@@ -1,0 +1,32 @@
+- name: Get instance info
+  ec2_instance_info:
+    region: "{{ aws_region }}"
+    filters:
+      instance-state-name: [ "pending", "running" ]  
+      "tag:group": "{{ instance_tag }}"   
+  register: instance_info
+
+- name: Wait until instances running ( accepting ssh connections )   
+  wait_for: host={{ item.public_ip_address }} port=22 search_regex=OpenSSH
+  with_items:
+    - "{{ instance_info.instances }}"
+
+- name: Make sure local 'scripts' directory exists
+  local_action:
+    module: file
+    path: "{{ scripts_directory_name }}"
+    state: directory 
+    
+- name: "Add ip addresses to {{ output_ip_address_script_name }}"
+  template:
+    src: "assets/{{ ip_address_script_name }}.j2"
+    dest: "{{ scripts_directory_name }}/{{ output_ip_address_script_name }}"
+    force: yes
+    mode: 0755
+
+- name: "Create {{ output_ssh_script_name }} script"
+  template:
+    src: "assets/{{ quick_ssh_script_name }}.j2"
+    dest: "{{ scripts_directory_name }}/{{ output_ssh_script_name}}"
+    mode: 0755
+

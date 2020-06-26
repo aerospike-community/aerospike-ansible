@@ -1,0 +1,48 @@
+- name: Get subnet for new instance
+  set_fact:
+    az: "{{ item }}"
+  when: item is defined
+
+- name: Get subnet id
+  ec2_vpc_subnet_info:
+    region: "{{ aws_region }}"               
+    filters:
+      vpc-id: "{{ vpc_id }}"
+      availability-zone: "{{ aws_region }}{{az}}"
+  register: vpc_subnets
+
+- block:
+  - name: Get Amazon Linux 2 AMI  x86_64 HVM gp2 AMI info
+    ec2_ami_info:
+      region: "{{ aws_region }}"     
+      filters:
+        name: "{{ ami_locator_string }}"
+        owner-alias: "amazon"        
+    register: ami_list
+
+  - name: Get the latest AMI
+    set_fact:
+      most_recent_ami: >
+        {{ ami_list.images | sort(attribute='creation_date') | last }}    
+  when: most_recent_ami is not defined
+  
+- name: Start EC2 cluster instances
+  ec2:
+    region: "{{ aws_region }}"     
+    assign_public_ip: "yes"
+    count_tag: 
+      group-plus-az: "{{ group_plus_az_tag_value }}"
+    exact_count: "{{ instance_count }}"     
+    image: "{{ most_recent_ami.image_id }}"
+    instance_type: "{{ instance_type }}"
+    key_name: "{{ cluster_tag }}"
+    group_id: "{{ security_group.group_id }}"
+    vpc_subnet_id: "{{ subnet.id }}"
+    instance_tags:
+       group: "{{ instance_tag }}"
+       group-plus-az: "{{ group_plus_az_tag_value }}"
+       cluster_id : "{{ cluster_id }}"         
+    wait: yes
+  vars:
+    group_plus_az_tag_value : "{{ instance_tag }} : {{ subnet.availability_zone }}"    
+    subnet: "{{ vpc_subnets.subnets[0] }}"

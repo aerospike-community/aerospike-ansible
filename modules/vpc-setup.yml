@@ -1,0 +1,100 @@
+- name: Create a new EC2 key
+  ec2_key:
+      name: "{{ vpc_tag }}"
+      region: "{{ aws_region }}"
+  register: ec2_key_result
+
+- name: "Save private key as {{ key_file_name }}"
+  copy: content="{{ ec2_key_result.key.private_key }}" dest="{{ key_file_name }}" mode=0400
+  when: ec2_key_result.changed
+
+- name: Create VPC
+  ec2_vpc_net:
+    name: "{{ vpc_tag }}"
+    cidr_block: "{{ vpc_cidr }}"
+    region: "{{ aws_region }}"
+    dns_support: "yes"
+    dns_hostnames: "yes"
+    tags: 
+      group: "{{ vpc_tag }}"
+  register: vpc
+
+- name : Get VPC ID
+  set_fact:
+    vpc_id: "{{ vpc.vpc.id }}"
+
+# Various machinations below to allow us to create the cidr based on the vpc_cidr and an integer uniquely identified by the az
+- name: Create Subnets
+  ec2_vpc_subnet:
+    state: present
+    vpc_id: "{{ vpc_id }}"
+    cidr: "{{ vpc_cidr.split('.')[0:2] | join('.') }}.{{item.0}}.0/24"
+    region: "{{ aws_region }}"
+    az: "{{ aws_region }}{{ item.1 }}"
+    tags:
+       group: "{{ vpc_tag }}"
+  with_indexed_items: "{{ cluster_az_list }}"
+
+- name: Get subnet info
+  ec2_vpc_subnet_info:
+    region: "{{ aws_region }}"    
+    filters:
+      vpc-id: "{{ vpc_id }}"      
+  register: subnet_info
+
+- name: Internet Gateway
+  ec2_vpc_igw:
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ aws_region }}"
+    state: present
+    tags:
+       group: "{{ vpc_tag }}"
+  register: lgw
+
+- name: Get Gateway id
+  set_fact:
+    gateway_id: "{{ lgw.gateway_id }}"
+
+- name: Route to Internet Gateway
+  ec2_vpc_route_table:
+    state: present
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ aws_region }}"
+    subnets: "{{ subnet_info.subnets|map(attribute='id')|list }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ gateway_id }}"
+    tags:
+       group: "{{ vpc_tag }}"
+
+- name: Create Security Group
+  ec2_group:
+    state: present
+    name: "{{ vpc_tag }} security group"
+    description: "{{ vpc_tag }} security group"
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ aws_region }}"
+    rules:
+      - proto: tcp
+        ports:
+        - 22
+        - "{{ prometheus_app_port }} "
+        - "{{ grafana_port }}"
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp 
+        ports: 
+        - "{{ service_port }}"
+        - "{{ fabric_port }}"
+        - "{{ heartbeat_port }}"
+        - "{{ info_port }}"
+        - "{{ xdr_info_port }}"
+        - "{{ tls_fabric_port }}"
+        - "{{ tls_heartbeat_port }}"
+        - "{{ tls_service_port }}"
+        - "{{ prometheus_exporter_port }}"        
+        cidr_ip: "{{ subnet_cidr }}"
+    tags:
+       group: "{{ vpc_tag }}"
+
+  register: security_group
+

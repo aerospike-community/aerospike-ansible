@@ -1,0 +1,80 @@
+- name: Get cluster ip addresses
+  set_fact:
+    cluster_ip_addresses: "{{ cluster_ip_addresses }} + [ '{{ hostvars[item].ec2_private_ip_address }}' ]"
+  with_items: 
+    "{{ groups.aerospike_cluster }}"
+  vars:
+      cluster_ip_addresses: []
+
+- name: "Get available nvme drives"
+  shell:
+    cmd: "ls /dev/nvme*p* | grep -v nvme0"
+  register: nvme_drives_list_output
+  
+- name: Store nvme drive list as a fact
+  set_fact: 
+    nvme_devices : "{{ nvme_drives_list_output.stdout_lines }}"
+
+- name: Copy configuration
+  template:
+    src: "assets/{{ aerospike_conf_file_name }}.j2"
+    dest: "/etc/aerospike/{{ aerospike_conf_file_name }}"
+    mode: '0644'
+    owner: root
+    group: root
+  vars:
+    ip_address: "{{ hostvars[inventory_hostname].ec2_private_ip_address }}"    
+
+- block:
+  - name: Check whether encryption key exists already
+    stat:
+     path: "{{ encryption_key_file_path }}"
+    register: stat_encryption_key_file_path
+
+  - block:
+    - name: "Add key to key file {{ encryption_key_file_path }}"
+      shell: "head --bytes 256 /dev/urandom > {{ encryption_key_file_path }}"
+      become: yes
+      when: not stat_encryption_key_file_path.stat.exists
+
+    - name: "Secure key file {{ encryption_key_file_path }}"
+      file:
+        path: "{{ encryption_key_file_path }}"
+        owner: root
+        group: root
+        mode: 0400    
+      become: yes
+  when: encryption_at_rest
+
+- block:
+  - name: Make sure certificates & private key directories exist
+    file: 
+      path: "{{ item }}"
+      state: directory    
+      owner: root
+      group: root
+      mode: 0555
+    with_items:
+    - "{{ certificates_directory }}"
+    - "{{ private_key_directory }}"
+
+  - name: Copy certificates across
+    copy: 
+      src: "assets/certificates/certs/{{ item }}"
+      dest: "{{ certificates_directory }}"
+      owner: root
+      group: root
+      mode: 0444
+    with_items:
+    - ca.crt
+    - server.crt
+
+  - name: Copy private key across
+    copy: 
+      src: "assets/certificates/private/server.key"
+      dest: "{{ private_key_directory }}"
+      owner: root
+      group: root
+      mode: 0400
+
+  when: tls_enabled         

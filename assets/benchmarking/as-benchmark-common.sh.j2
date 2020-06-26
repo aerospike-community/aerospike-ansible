@@ -1,0 +1,16 @@
+HOST={{ cluster_node_ip }}{% if tls_enabled %}:{{ tls_name }}:{{ tls_service_port }}
+{% else %} 
+{% endif %}
+PORT={% if tls_enabled %}{{ tls_service_port }}
+{% else %}{{ service_port }}
+{% endif %}
+ADDITIONAL_FLAGS={% if tls_enabled %}-tlsEnable
+{% else %} 
+{% endif %}
+NAMESPACE=test
+# Default is 10m keys
+KEYS=10000000
+RATE=1000
+OBJECT_SPEC=S:1536
+THREADS=256
+READ_PCT=50

@@ -1,0 +1,11 @@
+[Unit]
+Description=Prometheus Service
+Documentation=https://prometheus.io/docs/introduction/overview/
+Wants=network.target
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/prometheus --config.file /etc/prometheus/prometheus.yml --storage.tsdb.path /var/lib/prometheus/ --storage.tsdb.retention.size 4GB
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+- name: "Create {{ partition_script_name }} script"
+  template:
+    src: "assets/{{ partition_script_name }}.j2"
+    dest: "/tmp/{{ partition_script_name }}"
+    mode: 0755
+
+- name: "Partition nvme drives"
+  shell: "/tmp/{{ partition_script_name }}"
+
+# Need to re-gather facts to get new partition info via ansible_facts
+- gather_facts:
+

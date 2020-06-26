@@ -1,0 +1,6 @@
+# Aerospike Prometheus Exporter variables
+exporter_name: aerospike-prometheus-exporter
+exporter_config_dir: "/etc/{{ exporter_name }}"
+exporter_config_path: "{{ exporter_config_dir }}/ape.toml"
+exporter_service_name : "{{exporter_name}}.service"
+

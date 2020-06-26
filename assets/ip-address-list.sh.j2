@@ -1,0 +1,16 @@
+#!/bin/bash
+
+echo "Adds {{ instance_function }} ips to this array- {{ ip_array_name }}"
+echo "Use as \${{'{'}} {{ ip_array_name }}[index]}"
+echo "There are {{ instance_info.instances | length }} entries"
+echo 
+echo "##########################################################"
+echo
+
+declare -a {{ ip_array_name }}=()
+
+{% for item in instance_info.instances %}
+echo "{{ instance_function }} IP addresses : Public : {{ item.public_ip_address }}, Private : {{ item.private_ip_address }}"
+{{ ip_array_name }}+=({{ item.public_ip_address }})
+{% endfor %}
+

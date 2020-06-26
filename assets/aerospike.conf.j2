@@ -1,0 +1,89 @@
+# Aerospike database configuration file.
+
+# This stanza must come first.
+service {
+	user root
+	group root
+	paxos-single-replica-limit 1 # Number of nodes where the replica count is automatically reduced to 1.
+	pidfile /var/run/aerospike/asd.pid
+	proto-fd-max 15000
+	node-id {% include "assets/sub-templates/reverse-formatted-ip.j2" %}
+	cluster-name {{ cluster_name }}
+}
+
+logging {
+	# Log file must be an absolute path.
+	file /var/log/aerospike/aerospike.log {
+		context any info 
+	}
+        file /var/log/aerospike/udf.log {
+                context udf info
+                context aggr info
+        }
+}
+
+network {
+	{% if tls_enabled %}tls {{ tls_name }} {
+	    cert-file /etc/aerospike/certs/server.crt
+	    ca-file /etc/aerospike/certs/ca.crt
+	    key-file /etc/aerospike/certs/private/server.key
+	}
+	{% endif %}
+
+	service {
+		address eth0
+		
+		{% if tls_enabled %}tls-port {{ tls_service_port }}
+		tls-address any
+		tls-name {{ tls_name }}
+		tls-authenticate-client false{% else %}port {{ service_port }}
+		{% endif %}		
+	}
+
+	heartbeat {
+		mode mesh
+
+		{% if tls_enabled %}tls-port {{ tls_heartbeat_port }}
+		tls-name {{ tls_name }}
+		{% for ip_address in cluster_ip_addresses %}tls-mesh-seed-address-port {{ ip_address }} {{ tls_heartbeat_port }}
+		{% endfor %}{% else %}port {{ heartbeat_port }}
+		{% for ip_address in cluster_ip_addresses %}mesh-seed-address-port {{ ip_address }} {{ heartbeat_port }}
+		{% endfor %}
+		{% endif %}
+
+		interval 150
+		timeout 10
+	}
+
+	fabric {
+		address eth0
+		{% if tls_enabled %}tls-port {{ tls_fabric_port }}
+		tls-name {{ tls_name }}{% else %}port {{ fabric_port }}{% endif %}		
+	}
+
+	info {
+		port {{ info_port }}
+	}
+}
+
+
+namespace test {
+	replication-factor {{ replication_factor }}
+	memory-size {{ ( ansible_facts.memtotal_mb * aerospike_mem_pct / 100 ) | int }}M
+	default-ttl 0d
+	nsup-period 600
+	{% if enterprise %}rack-id {% include "assets/sub-templates/reverse-formatted-subnet.j2" %}
+	{% endif %} 
+	{% if strong_consistency %}strong-consistency true
+	{% endif %}
+
+	# To use file storage backing, comment out the line above and use the
+	# following lines instead.
+	storage-engine device {
+		{% if encryption_at_rest %}encryption-key-file {{ encryption_key_file_path }}
+		{% endif %} 
+		{% for nvme_device in nvme_devices %}device {{ nvme_device }} 
+		{% endfor %}data-in-memory false # Store data in memory in addition to file.
+	}
+}
+

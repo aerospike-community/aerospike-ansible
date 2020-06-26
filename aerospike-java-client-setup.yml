@@ -1,0 +1,114 @@
+---
+- name: Create an Aerospike client instance
+  hosts: local
+  connection: local
+  gather_facts: no
+  vars:
+    instance_tag: "{{ client_tag }}"
+    instance_count: "{{ aerospike_client_per_az_count }}"
+    instance_function: client
+    az_list : "{{ client_az_list }}"
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars
+    
+  - name: "Setup {{ instance_function }} instance vars"
+    include_vars: modules/instance-setup-vars.yml
+
+  - name: "Setup {{ instance_function }} instances"
+    import_tasks: modules/instance-setup.yml
+
+  - name: Get cluster instance info
+    ec2_instance_info:
+      region: "{{ aws_region }}"
+      filters:
+        instance-state-name: [ "pending", "running" ]  
+        "tag:group": "{{ cluster_tag }}"   
+    register: cluster_info
+
+  - name: Cache cluster ip address for use in benchmarking scripts
+    set_fact:
+      cluster_node_ip: "{{ cluster_info.instances[0].private_ip_address }}"
+      cacheable: yes
+
+  - meta: refresh_inventory
+
+- name: Set up benchmarking
+  hosts: "aerospike_client"
+  gather_facts: true
+  become: no
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars
+
+  - name: Install Java/git/sysstat/maven/screen
+    package:
+      name:
+        - java-1.8.0-openjdk
+        - git
+        - sysstat
+        - maven
+        - screen
+      state: latest
+    become: yes
+
+  - name: Install Aerospike Java Client
+    git:
+      clone: "yes"
+      dest: "{{ ansible_env.HOME }}/aerospike-client-java"
+      repo: "https://github.com/aerospike/aerospike-client-java.git"
+
+  - name: Retrieve cluster ip for use in benchmarking scripts
+    set_fact:
+      cluster_node_ip: "{{ hostvars['localhost'].cluster_node_ip }}"
+
+  - name: Build Aerospike Java Client
+    command:
+      chdir: "{{ ansible_env.HOME }}/aerospike-client-java"
+      cmd: "bash {{ ansible_env.HOME }}/aerospike-client-java/build_all"
+
+  - name: "Copy benchmarking config to client"
+    template:
+      src: "assets/benchmarking/as-benchmark-common.sh.j2"
+      dest: "{{ ansible_env.HOME }}/aerospike-client-java/benchmarks/as-benchmark-common.sh"
+      force: yes
+      mode: 0755
+
+  - name: "Copy benchmarking scripts to client"
+    copy:
+      src: "assets/benchmarking/{{ item }}"
+      dest: "{{ ansible_env.HOME }}/aerospike-client-java/benchmarks/{{ item }}"
+      mode: 0755
+    with_items:
+    - "as-benchmark-w.sh"
+    - "as-benchmark-rw.sh"
+
+  - block:
+    - name: Copy CA cert to client host temporary directory
+      copy: 
+        src: "{{ local_certs_directory }}/ca.crt"
+        dest: "{{ temp_directory }}"
+        mode: 0644
+
+    - name: Import CA cert to key store
+      shell: |
+        JAVA_HOME=$(dirname $(dirname $(dirname $(readlink -f $(which java)))))
+        # Remove without error if already exists
+        set +e
+        keytool -delete -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -alias aerospike_ansible         
+        set -e
+        keytool -import -noprompt -trustcacerts -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -alias aerospike_ansible -import -file {{ temp_directory}}/ca.crt 
+      become: yes
+
+    - name: Remove CA from temporary directory
+      file: 
+        path: "{{ temp_directory }}/ca.crt"
+        state: absent
+
+    when: tls_enabled
+
+
+
+

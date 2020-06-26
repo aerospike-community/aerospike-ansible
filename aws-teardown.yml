@@ -1,0 +1,87 @@
+---
+- name: "Teardown the generated aerospike cluster environment"
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+  - name: Import AWS constants
+    include_vars: 
+      dir: vars
+
+  - name: Get VPC ID
+    ec2_vpc_net:
+      region: "{{ aws_region }}"
+      name: "{{ cluster_tag }}"
+      cidr_block: "{{ vpc_cidr }}"          
+    register: vpc
+
+  - name: Stop instances
+    ec2_instance:
+      state: absent          
+      region : "{{ aws_region }}"
+      filters:
+        "tag:group": "{{ item }}"
+    with_items:
+    - "{{ cluster_tag }}"
+    - "{{ client_tag }}"
+    - "{{ act_tag }}"
+    - "{{ monitoring_tag }}"
+
+  - name: Remove Security Group
+    ec2_group:
+      state: absent
+      region : "{{ aws_region }}"
+      name: "{{ cluster_tag }} security group"
+
+  - name: Remove Internet Gateway
+    ec2_vpc_igw:
+      state: absent
+      region : "{{ aws_region }}"   
+      vpc_id: "{{ vpc.vpc.id }}"
+
+  - name: Remove Route Table
+    ec2_vpc_route_table:
+      state: absent
+      region: "{{ aws_region }}"
+      vpc_id: "{{ vpc.vpc.id }}"
+      tags:
+         group: "{{ cluster_tag }}"
+
+  - name: Get subnet info
+    ec2_vpc_subnet_info:
+      region: "{{ aws_region }}"    
+      filters:
+        vpc-id: "{{ vpc.vpc.id }}"      
+    register: subnet_info
+
+  - name: Remove Subnets
+    ec2_vpc_subnet:
+      state: absent
+      region: "{{ aws_region }}"          
+      vpc_id: "{{ vpc.vpc.id }}"
+      cidr: "{{ item.cidr_block }}"
+    with_items: "{{ subnet_info.subnets|list }}"      
+
+  - name: Remove VPC
+    ec2_vpc_net:
+      state: absent
+      region: "{{ aws_region }}"          
+      name: "{{ cluster_tag }}"
+      cidr_block: "{{ vpc_cidr }}"
+
+  - name: Remove Key
+    ec2_key:
+        state: absent
+        region: "{{ aws_region }}"            
+        name: "{{ cluster_tag }}"
+
+  - name : "Remove key file {{ key_file_name }}"
+    file:
+      path: "{{ key_file_name }}"
+      state: absent
+
+  - name : "Remove generated scripts directory"
+    file:
+      path: "{{ scripts_directory_name }}"
+      state: absent
+

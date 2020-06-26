@@ -1,0 +1,84 @@
+- name: Upgrading Aerospike
+  hosts: "aerospike_cluster"
+  serial: 1
+  gather_facts: true
+  become: yes
+  tasks:
+  - name: Get service facts
+    service_facts:
+
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars      
+
+  - block:   
+    - name: Quiesce and stop Aerospike service
+      shell: |
+        asinfo -v 'quiesce:'
+        asadm -e "asinfo -v 'recluster:'"
+        sleep 10
+        service aerospike stop
+
+    when: hostvars[inventory_hostname].services[aerospike_service_name] is defined
+
+  - debug: 
+      msg: "Aerospike uninstall complete"
+
+  - block:
+    - name: "stat {{ feature_key_path }}"
+      local_action: "stat path={{ feature_key_path }}"
+      become: no
+      register: feature_key_meta
+
+    - name: "Check feature key {{ feature_key_path }} exists"
+      fail:
+        msg: "Specified feature key {{ feature_key_path }} not found"
+      when: not feature_key_meta.stat.exists    
+    when: enterprise 
+
+  - name: Check whether download exists
+    stat:
+     path: "{{ download_path }}"
+    register: stat_download_path
+
+  - name: Download Aerospike {{ 'Enterprise' if enterprise else 'Community' }}, version = {{ aerospike_version }}, distribution = {{ aerospike_distribution }} if not already downloaded
+    get_url:
+     url: "{{ download_url }}"
+     dest: "{{ download_path }}"
+    when: not stat_download_path.stat.exists 
+
+  - name: Unpack installer
+    unarchive:
+     remote_src: "yes"
+     src: "{{ download_path }}"
+     dest: "{{ download_file_dir }}"
+     list_files: true
+    register: result
+
+  - name: Get install directory
+    set_fact:
+     install_directory: "{{ result.files[0] }}"
+
+  - name: "Install Aerospike"
+    command:
+      chdir: "{{ download_file_dir }}/{{ install_directory }}"
+      cmd: "{{ download_file_dir }}/{{ install_directory }}/asinstall"
+
+  - name: aerospike.conf
+    import_tasks: modules/aerospike-configuration-tasks.yml
+
+  - name: Start Aerospike service
+    shell: 
+      cmd: "service aerospike start"
+
+  - name: Wait for cluster to become stable
+    shell: |
+      while [[ $(asinfo -v 'cluster-stable:') =~ ^ERROR ]]
+      do 
+        sleep 5
+      done
+      sleep 5
+
+  - name: Installation complete message
+    debug: 
+      msg: "Aerospike install complete"

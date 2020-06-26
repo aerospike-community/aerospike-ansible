@@ -1,0 +1,36 @@
+- block:
+  - name: "Get VPC info"
+    ec2_vpc_net_info:
+      region: "{{ aws_region }}"               
+      filters:
+        "tag:group": "{{ cluster_tag }}"
+    register: vpc_info
+
+  - name: Save VPC id
+    set_fact: 
+      vpc_id: "{{ vpc_info.vpcs[0].vpc_id }}"
+
+  - name: Get security group
+    ec2_group_info:
+      region: "{{ aws_region }}"               
+      filters:
+        vpc-id: "{{ vpc_id }}"
+        "tag:group": "{{ cluster_tag }}"
+    register: security_groups
+
+  - name: Save security group
+    set_fact: 
+      security_group: "{{ security_groups.security_groups[0] }}"
+
+  - name: "Setup Instances"
+    include_tasks: modules/instance_create_using_az.yml
+    with_items: "{{ az_list }}"
+
+  - name: "Utility script setup"
+    import_tasks: modules/utility-script-setup.yml
+
+  when: groups[instance_tag] | length < reqd_count
+  vars:
+    reqd_count : "{{ instance_count * az_list | length}}"
+
+- meta: refresh_inventory

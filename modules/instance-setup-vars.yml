@@ -1,0 +1,3 @@
+output_ip_address_script_name: "{{instance_function}}-{{ ip_address_script_name }}"          
+output_ssh_script_name: "{{instance_function}}-{{ quick_ssh_script_name }}"
+ip_array_name: "AERO_{{ instance_function | upper }}_IPS"

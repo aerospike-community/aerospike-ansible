@@ -1,0 +1,72 @@
+# All AWS assets will be identified using this prefix + appropriate suffix
+# If you change it, you will need to modify inventory/hosts as tag names are used to define host groups
+cluster_identifier: aerospike
+
+# Tag for cluster instances
+cluster_tag: "{{ cluster_identifier }}_cluster"
+# Tag for client instances
+client_tag: "{{ cluster_identifier }}_client"
+# Tag for ACT instances
+act_tag: "{{ cluster_identifier }}_act"
+# Tag for monitoring instances
+monitoring_tag: "{{ cluster_identifier }}_monitoring"
+
+# Downloading 
+aerospike_download_suffix: "/artifact"
+
+aerospike_download_prefix: "http://www.aerospike.com/{{ 'enterprise/' if enterprise else ''}}download/server/"
+aerospike_edition: "{{ 'ee' if enterprise else 'ce' }}"
+
+download_url: "{{ aerospike_download_prefix }}/{{ aerospike_version }}{{ aerospike_download_suffix }}/{{ aerospike_distribution }}"
+download_file_name: "aerospike-{{ aerospike_edition }}-{{ aerospike_distribution }}-{{ aerospike_version }}.tar"
+download_file_dir: "{{ temp_directory }}"
+download_path: "{{ download_file_dir }}/{{ download_file_name }}"
+
+
+# Names of files generated/used by the playbooks - leave as is
+# =======================================================
+scripts_directory_name: scripts
+aerospike_conf_file_name: aerospike.conf
+key_file_name: .aws.pem
+ip_address_script_name: ip-address-list.sh
+quick_ssh_script_name: quick-ssh.sh 
+partition_script_name: partition-script.sh
+
+
+# Prometheus / Grafana
+prometheus_service_name: "prometheus.service"
+grafana_service_name: "grafana-server.service"
+prometheus_config_directory: /etc/prometheus
+
+# Feature key
+default_feature_key_path: "assets/features.conf"
+feature_key_path: "{{ feature_key if feature_key is defined else default_feature_key_path }}"
+
+# Encryption
+encryption_key_file_path: "/etc/aerospike/encryption-at-rest-key.dat"
+
+# TLS
+tls_name: "{{ cluster_name }}"
+local_certs_directory: "assets/certificates/certs" 
+certificates_directory: /etc/aerospike/certs
+private_key_directory: "{{ certificates_directory }}/private"
+
+# Ports
+service_port: 3000
+fabric_port: 3001
+heartbeat_port: 3002
+info_port: 3003
+xdr_info_port: 3004
+
+tls_service_port: 4333
+tls_fabric_port: 3011
+tls_heartbeat_port: 3012
+
+prometheus_exporter_port: 9145
+prometheus_app_port: 9090
+grafana_port: 4000
+
+# Other
+cluster_name: aerospike_ansible_demo_cluster
+aerospike_service_name: "aerospike.service"
+temp_directory: "/tmp"

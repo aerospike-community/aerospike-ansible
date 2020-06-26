@@ -1,0 +1,54 @@
+#!/bin/bash
+
+############################################################################
+#
+#	Script-name {{ output_ssh_script_name }}
+# 
+# 	Author : Ken Tune
+# 	Date : 2020-03-20
+# 
+#	Description : Easy ssh access to dynamically generated Aerospike {{instance_function}} instances
+#
+#	Usage : {{ output_ssh_script_name }} <NODE_ID>
+# 
+#	where NODE_ID is an integer between 1 and the number of Aerospike {{instance_function}} instances
+#
+############################################################################
+
+USAGE="Usage : {{ output_ssh_script_name }} <NODE_ID>"
+IP_ADDRESS_LIST_SCRIPT=scripts/{{ output_ip_address_script_name }}
+NODE_COUNT={{ instance_info.instances | length }}
+SELECTED_NODE=$1
+
+if [ ! -f  $IP_ADDRESS_LIST_SCRIPT ]
+then
+	echo "Script $IP_ADDRESS_LIST_SCRIPT, created by install-aerospike.yml playbook is not available"
+	echo "This contains the IP addresses for the Aerospike {{ instance_function }} instances"
+	echo "Can't log in without it. Try re-running ansible-playbook install-aerospike.yml"
+	exit 1
+fi
+
+if [ -z $SELECTED_NODE ]
+then
+	echo $USAGE
+	echo "Setting <NODE_ID> to 1"
+	SELECTED_NODE=1
+fi
+
+if [[ ! $SELECTED_NODE =~ ^[1-9][0-9]*$ ]]
+then
+	echo "<NODE_ID> must be a positive integer"
+	echo $USAGE
+	exit 1
+fi
+
+if (( $SELECTED_NODE > $NODE_COUNT ))
+then
+	echo "<NODE_COUNT> must be less than the number of Aerospike {{ instance_function }} instances -  ($NODE_COUNT)"
+	exit 1
+fi
+
+source $IP_ADDRESS_LIST_SCRIPT 1>/dev/null
+# Use -o Identities only if you have a lot of keys in your ssh-agent - can lead to 'Too many authentication failures' error
+ssh -i {{ key_file_name }} -o IdentitiesOnly=yes ec2-user@${{'{'}}{{ ip_array_name }}[$(($SELECTED_NODE - 1))]}
+

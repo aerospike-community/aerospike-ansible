@@ -1,0 +1,41 @@
+- name: Get service facts
+  service_facts:
+
+- name: Get variables
+  include_vars: vars/prometheus-exporter-vars.yml
+
+- block:    
+  - name: Install git/go
+    package:
+      name:
+        - go
+        - git
+      state: latest
+
+  - name: Add exporter systemd file
+    copy:
+      src: "assets/systemd/{{ exporter_name }}.service"
+      dest: "/usr/lib/systemd/system/{{ exporter_name }}.service"
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: Build Prometheus exporter
+    shell: |
+      eval $(go env)
+      go get github.com/aerospike/{{ exporter_name }}
+      cd $GOPATH/src/github.com/aerospike/{{ exporter_name }}
+      go build -o {{ exporter_name }} .
+      mkdir -p /etc/{{ exporter_name }}
+      curl https://raw.githubusercontent.com/aerospike/{{ exporter_name }}/master/aeroprom.conf.dev -o {{ exporter_config_path }}
+      sed -i 's/^db_host.*$/db_host="localhost"/' {{ exporter_config_path }}
+      sed -i "s/^tags.*$/tags=['{{ cluster_id }}']/" {{ exporter_config_path }}
+      rm /usr/local/bin/{{exporter_name}}
+      ln -s $(pwd)/{{ exporter_name }} /usr/local/bin/{{ exporter_name }}
+      systemctl daemon-reload
+  when: hostvars[inventory_hostname].services[exporter_service_name] is not defined
+
+- name: "Start {{ exporter_name }}, if not started"
+  service:
+    name: "{{ exporter_name}}"
+    state: restarted

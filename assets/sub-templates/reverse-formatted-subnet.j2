@@ -1,0 +1,8 @@
+{% set parts = ip_address.split(".") | map("int") | list %}
+{% set quads = [] %}
+{% for part in parts[:3] %}
+{% set formatted_part = "%02d" | format( part )  %}
+{{ quads.append(formatted_part) }}
+{%- endfor %}
+{{ quads | join("") }} 
+ 

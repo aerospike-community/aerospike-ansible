@@ -1,0 +1,171 @@
+---
+- name: Create monitoring instance
+  hosts: local
+  connection: local
+  gather_facts: yes
+  vars:
+    instance_tag: "{{ monitoring_tag }}"
+    instance_function: monitoring
+    # Doesn't make a lot of sense to have more than one monitoring instance, but if you want you can do it 
+    # by changing the parameters below
+    instance_count: 1
+    az_list:
+    - "{{ cluster_az_list[0] }}"
+
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars
+
+  - name: "Setup {{ instance_function }} instance vars"
+    include_vars: modules/instance-setup-vars.yml
+
+  - name: "Setup {{ instance_function }} instances"
+    import_tasks: modules/instance-setup.yml
+
+
+- name: Set up Prometheus / Grafana 
+  hosts: "aerospike_monitoring"
+  gather_facts: true
+  become: yes
+  tasks:
+  - name: Get service facts
+    service_facts:
+
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars
+
+  # When Prometheus is installed, we update the config file - might be necessary as we have added nodes
+  - import_tasks: modules/prometheus-configuration.yml
+    when: hostvars[inventory_hostname].services[prometheus_service_name] is defined
+
+  # When Prometheus is *not* installed, do the full install
+  - block:
+    - name: Some magic to help us install nodejs
+      shell: |
+        curl --silent --location https://rpm.nodesource.com/setup_10.x | sudo bash -
+        curl --silent --location https://dl.yarnpkg.com/rpm/yarn.repo | sudo tee /etc/yum.repos.d/yarn.repo
+        rpm --import https://dl.yarnpkg.com/rpm/pubkey.gpg    
+        cat <<EOF | sudo tee /etc/yum.repos.d/grafana.repo
+        [grafana]
+        name=grafana
+        baseurl=https://packages.grafana.com/oss/rpm
+        repo_gpgcheck=1
+        enabled=1
+        gpgcheck=1
+        gpgkey=https://packages.grafana.com/gpg.key
+        sslverify=1
+        sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+        EOF
+
+    - name: Install go/make/git/nodejs
+      package:
+        name:
+          - go
+          - make
+          - git
+          - nodejs
+          - yarn
+          - grafana
+        state: latest
+      become: yes
+
+    - name: Set up prometheus config directory
+      file: 
+        path: "{{ prometheus_config_directory }}"
+        state: directory    
+        owner: root
+        group: root
+        mode: 0555
+
+    - import_tasks: modules/prometheus-configuration.yml
+
+    - name: Add Prometheus systemd file
+      copy:
+        src: "assets/systemd/prometheus.service"
+        dest: "/usr/lib/systemd/system/prometheus.service"
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Install and start Prometheus
+      shell: |
+        eval $(go env)
+        echo $GOPATH > /tmp/goroot.txt
+        mkdir -p $GOPATH/src/github.com/prometheus
+        cd $GOPATH/src/github.com/prometheus
+        git clone https://github.com/prometheus/prometheus.git
+        cd prometheus
+        make build
+        mkdir /var/lib/prometheus
+        ln -s $(pwd)/prometheus /usr/local/bin/prometheus
+        grafana-cli plugins install camptocamp-prometheus-alertmanager-datasource
+        sysctl vm.max_map_count=131072
+        systemctl daemon-reload
+      become: yes
+    when: hostvars[inventory_hostname].services[prometheus_service_name] is not defined
+
+  # When Grafana is not installed
+  - block:
+    - name: Get dashboards
+      git:
+        clone: "yes"
+        dest: "{{ ansible_env.HOME }}/aerospike-monitoring"
+        repo: "https://github.com/aerospike/aerospike-monitoring.git"    
+
+    - name: Configure Grafana
+      shell: |
+        sed -i 's!^;provisioning.*$!provisioning = /etc/grafana/provisioning!' /etc/grafana/grafana.ini
+        sed -i 's!^.*http_port.*$!http_port = {{ grafana_port }}!' /etc/grafana/grafana.ini
+      become: yes
+
+    - name: Add Grafana configuration files
+      copy:
+        src: "{{ item }}"
+        dest: "/etc/grafana/provisioning"
+        directory_mode: 0755
+        owner: root
+        group: root
+        mode: 0755
+      loop:
+      - "assets/grafana/dashboards"
+      - "assets/grafana/datasources"
+
+    - name: Add Aerospike dashboards
+      copy:
+        src: "{{ ansible_env.HOME }}/aerospike-monitoring/config/grafana/dashboards"
+        remote_src: yes
+        dest: "/var/lib/grafana"
+        directory_mode: 0755
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: Add Summit Demo dashboards
+      copy:
+        src: "assets/grafana/summit-demo/{{ item }}"
+        dest: "/var/lib/grafana/dashboards"
+        owner: root
+        group: root
+        mode: 0777
+      loop:
+      - Summit-Talk-01.json
+      - Summit-Talk-02.json
+      - Summit-Talk-03.json
+
+    when: hostvars[inventory_hostname].services[grafana_service_name] is not defined
+
+  - name: Start prometheus, if not started
+    service:
+      name: prometheus
+      state: restarted
+
+  - name: Start grafana, if not started
+    service:
+      name: grafana-server
+      state: restarted
+
+  - name: "Grafana dashboard available at http://{{ inventory_hostname }}:{{ grafana_port }}"
+    debug: 
+      msg: "Success!!!"

@@ -1,0 +1,35 @@
+- name: Uninstalling Aerospike
+  hosts: "aerospike_cluster"
+  gather_facts: false
+  become: yes
+  tasks:    
+  - name: Get service facts
+    service_facts:
+
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars
+
+  - block:   
+    - name: Stop Aerospike service
+      shell: 
+        cmd: "service aerospike stop"
+
+    when: hostvars[inventory_hostname].services[aerospike_service_name] is defined
+
+  - name: Uninstall Aerospike Server
+    yum:
+     name: 
+     - aerospike-server-community
+     - aerospike-server-enterprise     
+     state: absent
+
+  - name: Uninstall Aerospike Tools   
+    yum:
+     name: aerospike-tools
+     state: absent
+
+  - debug: 
+      msg: "Aerospike uninstall complete"
+
+  
