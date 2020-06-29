@@ -40,7 +40,7 @@ will set up the monitoring stack including Prometheus and Grafana. You can then 
 
 ## Video
 
-A video showing end to end setup of the full Aerospike cluster/client/monitoring stack on a fresh Vagrant instance is available at [aerospike-ansible.mp4](https://drive.google.com/file/d/1TQdXwwTqsSQQ-x9DPnAFuxf00Mlal6AQ/view?usp=sharing)
+A [video](https://www.youtube.com/watch?v=fWKACehyJHc&feature=youtu.be) showing end to end setup of the full Aerospike cluster/client/monitoring stack on a fresh Vagrant instance is available on YouTube.
 
 The first 10min deal with setting up the pre-requisites (virtualenv/ansible/boto/IAM) with the remainder showing use of the playbooks.
 
