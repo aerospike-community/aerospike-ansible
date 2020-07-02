@@ -165,6 +165,25 @@ the ```inventory/hosts``` file. Examples of what to do are given in the ```inven
 
 TLS enabled Aerospike is built using pre-built key pairs, which are exposed in this project - see [private](assets/certificates/private). These keys are not to be used for production purposes. You will however see instructions in [certificates](assets/certificates) which tell you how to create your own, which can be used to replace the ones provided.
 
+To use aql with TLS enabled
+
+```
+aql --tls-enable --tls-name=aerospike_ansible_demo_cluster --tls-cafile=/etc/aerospike/certs/ca.crt -p 4333
+```
+
+Similarly, for asadm
+
+```
+asadm --tls-enable --tls-name=aerospike_ansible_demo_cluster --tls-cafile=/etc/aerospike/certs/ca.crt -p 4333
+```
+
+and asinfo
+
+```
+asinfo --tls-enable --tls-name=aerospike_ansible_demo_cluster --tls-cafile=/etc/aerospike/certs/ca.crt -p 4333 <YOUR_COMMAND_HERE>
+```
+
+
 ## SSH
 
 If you see
