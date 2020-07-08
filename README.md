@@ -199,3 +199,7 @@ IdentitiesOnly=yes to your .ssh/config file
 Disk partitioning relies on devices being named /dev/nvme* & we ignore nvme0 as this is usually the boot volume.
 
 Dash is very handy for Ansible documentation
+
+## Feedback
+
+Please use the [issues](issues) feature.
