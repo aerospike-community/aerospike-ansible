@@ -202,4 +202,4 @@ Dash is very handy for Ansible documentation
 
 ## Feedback
 
-Please use the [issues](/aerospike-examples/aerospike-ansible/issues) feature.
+Please use the [issues](../../issues) feature.
