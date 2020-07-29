@@ -1,8 +1,6 @@
 Ansible
 -------
 
-Enhance README - IAM / virtualenv
-Update README to include details of client
 Separate repo for ACT?
 Put demo stuff in separate branch. Include scripts
 Change command prompt so we see function on line ( quick ssh )
@@ -27,7 +25,6 @@ When Finishing
 ===============
 
 Need to check everything works when tls_enabled=false
-Bare install i.e. not from your Mac
 
 Done
 ====
@@ -50,7 +47,9 @@ Need to stop service in teardown
 Change application_tag to cluster_tag
 Auto-set memory in namespace
 Check variable precedence ( so can I over-ride variables in all.yml - eg crypto / enterprise ) - yes you can
-
+Enhance README - IAM / virtualenv
+Bare install i.e. not from your Mac
+Update README to include details of client
 
 Output checked
 ==============
