@@ -25,7 +25,7 @@ encryption_at_rest: false
 tls_enabled: true
 
 # Separately toggle fabric tls
-fabric_tls_enabled: false
+fabric_tls_enabled: true
 
 # Strong consistency
 strong_consistency: true
