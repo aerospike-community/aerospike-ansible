@@ -43,7 +43,7 @@ network {
 	heartbeat {
 		mode mesh
 
-		{% if tls_enabled %}tls-port {{ tls_heartbeat_port }}
+		{% if fabric_tls_enabled %}tls-port {{ tls_heartbeat_port }}
 		tls-name {{ tls_name }}
 		{% for ip_address in cluster_ip_addresses %}tls-mesh-seed-address-port {{ ip_address }} {{ tls_heartbeat_port }}
 		{% endfor %}{% else %}port {{ heartbeat_port }}
@@ -57,7 +57,7 @@ network {
 
 	fabric {
 		address eth0
-		{% if tls_enabled %}tls-port {{ tls_fabric_port }}
+		{% if fabric_tls_enabled %}tls-port {{ tls_fabric_port }}
 		tls-name {{ tls_name }}{% else %}port {{ fabric_port }}{% endif %}		
 	}
 
@@ -67,7 +67,7 @@ network {
 }
 
 
-namespace test {
+namespace iptr {
 	replication-factor {{ replication_factor }}
 	memory-size {{ ( ansible_facts.memtotal_mb * aerospike_mem_pct / 100 ) | int }}M
 	default-ttl 0d

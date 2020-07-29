@@ -1,7 +1,7 @@
 # Instance types, hosts per zone, partitions per device
 # You may wish to change these
 # =================================
-instance_type: c5d.large
+instance_type: c5d.18xlarge
 cluster_hosts_per_az : 1
 partitions_per_device: 4
 
@@ -16,16 +16,19 @@ aerospike_act_count : 1
 
 # Whether to use enterprise
 # Set to false by default so will run without features.conf
-enterprise: false
+enterprise: true
 
 # Whether to enable encryption at rest
 encryption_at_rest: false
 
 # Whether to use TLS
-tls_enabled: false
+tls_enabled: true
+
+# Separately toggle fabric tls
+fabric_tls_enabled: false
 
 # Strong consistency
-strong_consistency: false
+strong_consistency: true
 
 # Monitoring
 monitoring_enabled: true
@@ -44,7 +47,7 @@ aerospike_version: "latest"
 ami_locator_string: "amzn2-ami-hvm-2.0.*-x86_64-gp2*"
 
 # Replication factor
-replication_factor: 2
+replication_factor: 3
 
 # Proportion of total memory to assign to Aerospike - used in configuration template - see assets folder
 aerospike_mem_pct: 80
@@ -55,4 +58,5 @@ rack_id : 101
 # Cluster ID - used by Prometheus exporter
 cluster_id: "CL-01"
 
+feature_key: "/Users/ken/features.conf"
 
