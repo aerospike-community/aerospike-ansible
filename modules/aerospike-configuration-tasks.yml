@@ -8,12 +8,27 @@
 
 - name: "Get available nvme drives"
   shell:
-    cmd: "ls /dev/nvme*p* | grep -v nvme0"
+    cmd: "ls /dev/nvme*p* | grep -v nvme0 | grep -v p1"
   register: nvme_drives_list_output
   
 - name: Store nvme drive list as a fact
   set_fact: 
     nvme_devices : "{{ nvme_drives_list_output.stdout_lines }}"
+
+- name: "Get all flash device"
+  shell:
+    cmd: "ls /dev/nvme*p* | grep -v nvme0 | grep p1"
+  register: nvme_drives_list_output
+
+- name: "Store all flash nvme drive list as a fact"
+  set_fact: 
+    all_flash_device : "{{ nvme_drives_list_output.stdout_lines }}"
+
+- name: "Format and mount all flash device"
+  shell: |
+    mkfs.xfs {{ all_flash_device[0] }}
+    mkdir /nvme_all_flash
+    mount {{ all_flash_device[0] }} /nvme_all_flash
 
 - name: Copy configuration
   template:
