@@ -27,6 +27,7 @@ network {
 	    cert-file /etc/aerospike/certs/server.crt
 	    ca-file /etc/aerospike/certs/ca.crt
 	    key-file /etc/aerospike/certs/private/server.key
+	    cipher-suite AES256-GCM-SHA384:AES128-GCM-SHA256
 	}
 	{% endif %}
 
@@ -57,6 +58,10 @@ network {
 
 	fabric {
 		address eth0
+		channel-rw-recv-pools 16
+		channel-rw-recv-threads 32
+		channel-rw-fds 64
+		send-threads 16
 		{% if fabric_tls_enabled %}tls-port {{ tls_fabric_port }}
 		tls-name {{ tls_name }}{% else %}port {{ fabric_port }}{% endif %}		
 	}
