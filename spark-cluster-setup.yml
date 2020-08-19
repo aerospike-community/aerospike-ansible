@@ -1,104 +1,114 @@
 ---
-# - name: Create a Spark cluster
-#   hosts: local
-#   connection: local
-#   gather_facts: no
-#   vars:
-#     instance_tag: "{{ spark_tag }}"
-#     instance_count: "{{ spark_worker_per_az_count }}"
-#     instance_function: spark
-#     az_list: "{{ cluster_az_list }}"
-#     instance_type: "{{ spark_instance_type }}"
-#   tasks:
-#   - name: Import configuration properties
-#     include_vars: 
-#       dir: vars
+- name: Create a Spark cluster
+  hosts: local
+  connection: local
+  gather_facts: no
+  vars:
+    instance_tag: "{{ spark_tag }}"
+    instance_count: "{{ spark_worker_per_az_count }}"
+    instance_function: spark
+    az_list: "{{ cluster_az_list }}"
+    instance_type: "{{ spark_instance_type }}"
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars
     
-#   - name: "Setup {{ instance_function }} instance vars"
-#     include_vars: modules/instance-setup-vars.yml
+  - name: "Setup {{ instance_function }} instance vars"
+    include_vars: modules/instance-setup-vars.yml
 
-#   - name: "Setup {{ instance_function }} instances"
-#     import_tasks: modules/instance-setup.yml
+  - name: "Setup {{ instance_function }} instances"
+    import_tasks: modules/instance-setup.yml
 
-#   - meta: refresh_inventory
+  - meta: refresh_inventory
 
-# - name: Set up Spark
-#   hosts: "aerospike_spark"
-#   gather_facts: false
-#   become: no
-#   tasks:
-#   - name: Import configuration properties
-#     include_vars: 
-#       dir: vars
+- name: Set up Spark
+  hosts: "aerospike_spark"
+  gather_facts: false
+  become: no
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars
 
-#   - name: Install Java
-#     package:
-#       name:
-#         - java-1.8.0-openjdk
-#       state: latest
-#     become: yes
+  - name: Install Java
+    package:
+      name:
+        - java-1.8.0-openjdk
+      state: latest
+    become: yes
 
-#   - name: Install Scala
-#     shell: |
-#       if [ -z $(which scala 2>/dev/null ) ]
-#       then
-#         cd /tmp
-#         wget https://downloads.typesafe.com/scala/{{ scala_version }}/scala-{{ scala_version }}.tgz
-#         tar xzf "scala-{{ scala_version }}.tgz"
-#         mkdir "{{ scala_home }}"
-#         rm "/tmp/scala-{{ scala_version }}/bin/"*.bat
-#         mv "/tmp/scala-{{ scala_version }}/bin" "/tmp/scala-{{ scala_version }}/lib" "{{ scala_home }}"
-#         ln -s "{{ scala_home }}/bin/"* "/usr/bin/"
-#         rm "/tmp/scala-{{ scala_version }}.tgz"
-#         rm -rf "/tmp/scala-{{ scala_version }}"
-#       fi
-#     become: yes
+  - name: Install Scala
+    shell: |
+      if [ -z $(which scala 2>/dev/null ) ]
+      then
+        cd /tmp
+        wget https://downloads.typesafe.com/scala/{{ scala_version }}/scala-{{ scala_version }}.tgz
+        tar xzf "scala-{{ scala_version }}.tgz"
+        mkdir "{{ scala_home }}"
+        rm "/tmp/scala-{{ scala_version }}/bin/"*.bat
+        mv "/tmp/scala-{{ scala_version }}/bin" "/tmp/scala-{{ scala_version }}/lib" "{{ scala_home }}"
+        ln -s "{{ scala_home }}/bin/"* "/usr/bin/"
+        rm "/tmp/scala-{{ scala_version }}.tgz"
+        rm -rf "/tmp/scala-{{ scala_version }}"
+      fi
+    become: yes
 
-#   - name: Install Spark
-#     shell: |
-#       if [ ! -d /spark ]
-#       then
-#         cd /tmp
-#         wget https://downloads.apache.org/spark/spark-{{ spark_version }}/spark-{{ spark_version }}-bin-hadoop{{ hadoop_version}}.tgz
-#         tar xvfz spark-{{ spark_version }}-bin-hadoop{{ hadoop_version}}.tgz
-#         mv spark-{{ spark_version }}-bin-hadoop{{ hadoop_version}} /spark
-#         rm spark-{{ spark_version }}-bin-hadoop{{ hadoop_version}}.tgz
-#       fi
-#     become: yes
+  - name: Install Spark
+    shell: |
+      if [ ! -d /spark ]
+      then
+        cd /tmp
+        wget https://downloads.apache.org/spark/spark-{{ spark_version }}/spark-{{ spark_version }}-bin-hadoop{{ hadoop_version}}.tgz
+        tar xvfz spark-{{ spark_version }}-bin-hadoop{{ hadoop_version}}.tgz
+        mv spark-{{ spark_version }}-bin-hadoop{{ hadoop_version}} /spark
+        rm spark-{{ spark_version }}-bin-hadoop{{ hadoop_version}}.tgz
+      fi
+    become: yes
 
-# - name: Start Master
-#   hosts: "aerospike_spark[0]"
-#   gather_facts: false
-#   become: no
-#   tasks:
-#   - name: Start Master
-#     shell: |
-#       /spark/sbin/stop-master.sh
-#       /spark/sbin/start-master.sh
+  - name: Install Aerospike Spark Connect
+    shell: |
+      if [ ! -f /spark/jars/aerospike-spark-assembly-{{ aerospike_spark_connect_version }}.jar ]
+      then
+        cd /tmp
+        wget https://www.aerospike.com/enterprise/download/connectors/aerospike-spark/{{ aerospike_spark_connect_version }}/artifact/jar -O aerospike-spark-assembly-{{ aerospike_spark_connect_version }}.jar     
+        mv aerospike-spark-assembly-{{ aerospike_spark_connect_version }}.jar /spark/jars/            
+      fi
+    become: yes
 
-# - name: Start Spark worker processes
-#   hosts: "aerospike_spark"
-#   gather_facts: false
-#   become: no
-#   tasks:
-#   - name: Import configuration properties
-#     include_vars: 
-#       dir: vars
+- name: Start Master
+  hosts: "aerospike_spark[0]"
+  gather_facts: false
+  become: no
+  tasks:
+  - name: Start Master
+    shell: |
+      /spark/sbin/stop-master.sh
+      /spark/sbin/start-master.sh
 
-#   - name: Get Spark master
-#     delegate_to: localhost
-#     ec2_instance_info:
-#       region: "{{ aws_region }}"
-#       filters:
-#         instance-state-name: [ "pending", "running" ]  
-#         ip-address: "{{ groups.aerospike_spark[0] }}"
-#         "tag:group": "{{ spark_tag }}"   
-#     register: spark_info
+- name: Start Spark worker processes
+  hosts: "aerospike_spark"
+  gather_facts: false
+  become: no
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars
 
-#   - name: Start agents
-#     shell: |
-#       /spark/sbin/stop-slave.sh 
-#       /spark/sbin/start-slave.sh spark://{{ spark_info.instances[0].private_ip_address }}:{{ spark_master_port }}
+  - name: Get Spark master
+    delegate_to: localhost
+    ec2_instance_info:
+      region: "{{ aws_region }}"
+      filters:
+        instance-state-name: [ "pending", "running" ]  
+        ip-address: "{{ groups.aerospike_spark[0] }}"
+        "tag:group": "{{ spark_tag }}"   
+    register: spark_info
+
+  - name: Start agents
+    shell: |
+      /spark/sbin/stop-slave.sh 
+      /spark/sbin/start-slave.sh spark://{{ spark_info.instances[0].private_ip_address }}:{{ spark_master_port }}
 
 - name: Spark Info
   hosts: local
