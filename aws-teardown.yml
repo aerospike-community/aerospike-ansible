@@ -24,8 +24,8 @@
     with_items:
     - "{{ cluster_tag }}"
     - "{{ client_tag }}"
-    - "{{ act_tag }}"
     - "{{ monitoring_tag }}"
+    - "{{ spark_tag }}"
 
   - name: Remove Security Group
     ec2_group:

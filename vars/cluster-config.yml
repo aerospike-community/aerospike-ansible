@@ -1,12 +1,20 @@
 # Instance types, hosts per zone, partitions per device
 # You may wish to change these
 # =================================
-instance_type: c5d.large
+cluster_instance_type: c5d.large
 cluster_hosts_per_az : 1
 partitions_per_device: 4
 
-# Aerospike client count
+# Aerospike client type and count
+client_instance_type: "{{ cluster_instance_type }}"
 aerospike_client_per_az_count: 1
+
+# Aerospike monitorign type
+monitoring_instance_type: "{{ cluster_instance_type }}"
+
+# Spark worker count
+spark_instance_type: c5d.large
+spark_worker_per_az_count: 1
 
 # Installation configuration
 # ===================================

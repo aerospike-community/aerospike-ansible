@@ -67,7 +67,11 @@
     tags:
        group: "{{ vpc_tag }}"
 
-- name: Create Security Group
+- name: Get my ip address
+  ipify_facts:
+  register: public_ip
+
+- name: Create Security Group ( lock public ports to my ip )
   ec2_group:
     state: present
     name: "{{ vpc_tag }} security group"
@@ -80,7 +84,9 @@
         - 22
         - "{{ prometheus_app_port }} "
         - "{{ grafana_port }}"
-        cidr_ip: 0.0.0.0/0
+        - "{{ spark_master_web_port }}"
+        - "{{ spark_worker_web_port }}"
+        cidr_ip: "{{ ipify_public_ip }}/32"
       - proto: tcp 
         ports: 
         - "{{ service_port }}"
@@ -91,7 +97,8 @@
         - "{{ tls_fabric_port }}"
         - "{{ tls_heartbeat_port }}"
         - "{{ tls_service_port }}"
-        - "{{ prometheus_exporter_port }}"        
+        - "{{ prometheus_exporter_port }}"    
+        - "{{ spark_master_port }}"    
         cidr_ip: "{{ subnet_cidr }}"
     tags:
        group: "{{ vpc_tag }}"

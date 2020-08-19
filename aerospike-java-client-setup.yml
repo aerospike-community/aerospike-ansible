@@ -8,6 +8,7 @@
     instance_count: "{{ aerospike_client_per_az_count }}"
     instance_function: client
     az_list : "{{ client_az_list }}"
+    instance_type: "{{ client_instance_type }}"    
   tasks:
   - name: Import configuration properties
     include_vars: 

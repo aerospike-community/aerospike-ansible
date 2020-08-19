@@ -13,6 +13,9 @@ tag_group_aerospike_act
 [aerospike_monitoring:children]
 tag_group_aerospike_monitoring
 
+[aerospike_spark:children]
+tag_group_aerospike_spark
+
 [aerospike_cl_01:children]
 tag_cluster_id_CL_01
 
@@ -26,6 +29,8 @@ tag_cluster_id_CL_02
 [tag_group_aerospike_act]
 
 [tag_group_aerospike_monitoring]
+
+[tag_group_aerospike_spark]
 
 [tag_cluster_id_CL_01]
 

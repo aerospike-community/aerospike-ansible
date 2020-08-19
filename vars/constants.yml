@@ -6,10 +6,10 @@ cluster_identifier: aerospike
 cluster_tag: "{{ cluster_identifier }}_cluster"
 # Tag for client instances
 client_tag: "{{ cluster_identifier }}_client"
-# Tag for ACT instances
-act_tag: "{{ cluster_identifier }}_act"
 # Tag for monitoring instances
 monitoring_tag: "{{ cluster_identifier }}_monitoring"
+# Tag for spark instances
+spark_tag: "{{ cluster_identifier }}_spark"
 
 # Downloading 
 aerospike_download_suffix: "/artifact"
@@ -65,6 +65,10 @@ tls_heartbeat_port: 3012
 prometheus_exporter_port: 9145
 prometheus_app_port: 9090
 grafana_port: 4000
+
+spark_master_port: 7077
+spark_master_web_port: 8080
+spark_worker_web_port: 8081
 
 # Other
 cluster_name: aerospike_ansible_demo_cluster
