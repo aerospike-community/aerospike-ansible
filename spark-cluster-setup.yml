@@ -13,6 +13,16 @@
   - name: Import configuration properties
     include_vars: 
       dir: vars
+
+  - name: "stat {{ feature_key_path }}"
+    local_action: "stat path={{ feature_key_path }}"
+    become: no
+    register: feature_key_meta
+
+  - name: "Check feature key {{ feature_key_path }} exists"
+    fail:
+      msg: "Specified feature key {{ feature_key_path }} not found - required to use Spark connector"
+    when: not feature_key_meta.stat.exists    
     
   - name: "Setup {{ instance_function }} instance vars"
     include_vars: modules/instance-setup-vars.yml
@@ -56,6 +66,7 @@
 
   - name: Install Spark
     shell: |
+      mkdir -p /etc/aerospike    
       if [ ! -d /spark ]
       then
         cd /tmp
@@ -74,6 +85,15 @@
         wget https://www.aerospike.com/enterprise/download/connectors/aerospike-spark/{{ aerospike_spark_connect_version }}/artifact/jar -O aerospike-spark-assembly-{{ aerospike_spark_connect_version }}.jar     
         mv aerospike-spark-assembly-{{ aerospike_spark_connect_version }}.jar /spark/jars/            
       fi
+    become: yes
+
+  - name: Copy feature key
+    copy:
+      src: "{{ feature_key_path }}"
+      dest: /etc/aerospike/features.conf
+      owner: root
+      group: root
+      mode: '0644'        
     become: yes
 
 - name: Start Master

@@ -86,6 +86,17 @@
     - "as-benchmark-w.sh"
     - "as-benchmark-rw.sh"
 
+  - name: Install asloader
+    git:
+      clone: "yes"
+      dest: "{{ ansible_env.HOME }}/aerospike-loader"
+      repo: "https://github.com/aerospike/aerospike-loader.git"
+
+  - name: Build asloader
+    command:
+      chdir: "{{ ansible_env.HOME }}/aerospike-loader"
+      cmd: "bash {{ ansible_env.HOME }}/aerospike-loader/build"
+
   - block:
     - name: Copy CA cert to client host temporary directory
       copy: 
