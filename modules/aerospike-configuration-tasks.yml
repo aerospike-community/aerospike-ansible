@@ -55,9 +55,6 @@
   set_fact: 
     flash_data_size : "{{ all_flash_data_size.stdout_lines[0] }}"
 
-- debug:
-    msg: "{{ flash_data_size }}"
-
 - name: Copy configuration
   template:
     src: "assets/{{ aerospike_conf_file_name }}.j2"
