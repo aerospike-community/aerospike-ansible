@@ -21,6 +21,9 @@ encryption_at_rest: false
 # Whether to use TLS
 tls_enabled: false
 
+# Whether to use TLS
+fabric_tls_enabled: "{{ tls_enabled }}"
+
 # Strong consistency
 strong_consistency: false
 
