@@ -4,7 +4,7 @@
 service {
 	user root
 	group root
-	hist-track-thresholds 1,2,4,8,16,32,64,128,256,512
+	# hist-track-thresholds 1,2,4,8,16,32,64,128,256,512
 	paxos-single-replica-limit 1 # Number of nodes where the replica count is automatically reduced to 1.
 	pidfile /var/run/aerospike/asd.pid
 	proto-fd-max 15000
@@ -78,6 +78,7 @@ namespace iptr {
 	memory-size {{ ( ansible_facts.memtotal_mb * aerospike_mem_pct / 100 ) | int }}M
 	default-ttl 0d
 	nsup-period 600
+	partition-tree-sprigs 131072
 	{% if enterprise %}rack-id {% include "assets/sub-templates/reverse-formatted-subnet.j2" %}
 	{% endif %} 
 	{% if strong_consistency %}strong-consistency true
@@ -93,8 +94,8 @@ namespace iptr {
 	}
 
 	index-type flash {
-	    mount /nvme_all_flash
-	    mounts-size-limit 10G
+		{% for all_flash_device in all_flash_devices %}mount {{ all_flash_device }} 	
+		{% endfor %}mounts-size-limit {{ flash_data_size }}G
 	}	
 }
 

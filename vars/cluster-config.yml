@@ -1,9 +1,9 @@
 # Instance types, hosts per zone, partitions per device
 # You may wish to change these
 # =================================
-instance_type: c5d.18xlarge
+instance_type: c5d.xlarge
 cluster_hosts_per_az : 1
-partitions_per_device: 4
+partitions_per_device: 5
 
 # Aerospike client count
 aerospike_client_per_az_count: 1
@@ -28,7 +28,7 @@ fabric_tls_enabled: true
 strong_consistency: true
 
 # Monitoring
-monitoring_enabled: true
+monitoring_enabled: false
 
 # Distribution
 aerospike_distribution: "el6" 
@@ -54,6 +54,5 @@ rack_id : 101
 
 # Cluster ID - used by Prometheus exporter
 cluster_id: "CL-01"
-
 feature_key: "/Users/ken/features.conf"
 
