@@ -1,5 +1,5 @@
 [local]
-localhost ansible_python_interpreter=python
+localhost ansible_python_interpreter=python ansible_connection=local
 
 [aerospike_cluster]
 ; for gcp add your cluster hostnames below e.g.

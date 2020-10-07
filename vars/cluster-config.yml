@@ -8,9 +8,6 @@ partitions_per_device: 4
 # Aerospike client count
 aerospike_client_per_az_count: 1
 
-# ACT host count
-aerospike_act_count : 1
-
 # Installation configuration
 # ===================================
 

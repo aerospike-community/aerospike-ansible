@@ -40,7 +40,7 @@ will set up the monitoring stack including Prometheus and Grafana. You can then 
 
 ## Video
 
-A [video](https://www.youtube.com/watch?v=fWKACehyJHc&feature=youtu.be) showing end to end setup of the full Aerospike cluster/client/monitoring stack on a fresh Vagrant instance is available on YouTube.
+A [video](https://youtu.be/fWKACehyJHc) showing end to end setup of the full Aerospike cluster/client/monitoring stack on a fresh Vagrant instance is available.
 
 The first 10min deal with setting up the pre-requisites (virtualenv/ansible/boto/IAM) with the remainder showing use of the playbooks.
 
@@ -161,6 +161,29 @@ Make use of the ```gcp``` branch of this repo as some small tweaks were needed t
 Then create your cluster/client/monitoring instances maybe using VM templates (a GCP thing) to ensure consistency, give them names and then add the host names to 
 the ```inventory/hosts``` file. Examples of what to do are given in the ```inventory/hosts``` in the ```gcp``` branch.
 
+## TLS
+
+TLS enabled Aerospike is built using pre-built key pairs, which are exposed in this project - see [private](assets/certificates/private). These keys are not to be used for production purposes. You will however see instructions in [certificates](assets/certificates) which tell you how to create your own, which can be used to replace the ones provided.
+
+To use aql with TLS enabled
+
+```
+aql --tls-enable --tls-name=aerospike_ansible_demo_cluster --tls-cafile=/etc/aerospike/certs/ca.crt -p 4333
+```
+
+Similarly, for asadm
+
+```
+asadm --tls-enable --tls-name=aerospike_ansible_demo_cluster --tls-cafile=/etc/aerospike/certs/ca.crt -p 4333
+```
+
+and asinfo
+
+```
+asinfo --tls-enable --tls-name=aerospike_ansible_demo_cluster --tls-cafile=/etc/aerospike/certs/ca.crt -p 4333 <YOUR_COMMAND_HERE>
+```
+
+
 ## SSH
 
 If you see
@@ -176,3 +199,7 @@ IdentitiesOnly=yes to your .ssh/config file
 Disk partitioning relies on devices being named /dev/nvme* & we ignore nvme0 as this is usually the boot volume.
 
 Dash is very handy for Ansible documentation
+
+## Feedback
+
+Please use the [issues](../../issues) feature.
