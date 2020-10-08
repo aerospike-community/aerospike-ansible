@@ -47,7 +47,7 @@
 
 - name: "Get total all flash volume size"
   shell:
-    cmd: "df -kh | grep all_flash |  sed 's/G//' | awk '{sum+=$2 -1}END{print sum}'"
+    cmd: "df -kh -BG | grep all_flash |  sed 's/G//' | awk '{sum+=$2 -1}END{print sum}'"
   register: all_flash_data_size
 
 
