@@ -32,6 +32,9 @@ tls_enabled: false
 # Strong consistency
 strong_consistency: false
 
+# All Flash
+all_flash: false
+
 # Monitoring
 monitoring_enabled: true
 
@@ -59,5 +62,6 @@ rack_id : 101
 
 # Cluster ID - used by Prometheus exporter
 cluster_id: "CL-01"
+
 
 

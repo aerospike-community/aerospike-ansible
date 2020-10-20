@@ -84,6 +84,11 @@ namespace test {
 		{% endif %} 
 		{% for nvme_device in nvme_devices %}device {{ nvme_device }} 
 		{% endfor %}data-in-memory false # Store data in memory in addition to file.
-	}
+	}{% if all_flash %}
+	
+	index-type flash {
+        {% for all_flash_device in all_flash_devices %}	mount {{ all_flash_device }}     
+        {% endfor %}	mounts-size-limit {{ flash_data_size }}G
+	}{% endif %} 
 }
 

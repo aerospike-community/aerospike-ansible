@@ -63,6 +63,7 @@ Everything you are likely to want to change can be found in  ```vars/cluster-con
 - **encryption_at_rest** - default = false. If true ```aerospike.conf``` will be appropriately modified and a key file generated
 - **tls_enabled** - default = false. If true ```aerospike.conf``` will be appropriately modified and all certificates appropriately located. Connecting clients will be appropriately configured.
 - **strong_consistency** - default = false. If true ```aerospike.conf``` will be appropriately modified. The roster will be automatically set for you, with rack awareness, assuming each subnet constitutes a separate 'rack'
+- **all_flash** - default = false. If true, first partition on each disk, so (1 / partitions_per_device) of the available space, will be allocated for index on device. Both this and partition-tree-sprigs will usually require custom setting. For accurate sizing consult [all flash sizing](https://www.aerospike.com/docs/operations/configure/namespace/index/index.html#flash-index-calculations-summary)
 - **monitoring_enabled** - default = false. If true the Aerospike Prometheus agent will be installed, configured and started on the cluster nodes.
 - **aerospike_distribution** - default = el6. Determines the distribution used.
 - **aerospike_version** - default = latest
