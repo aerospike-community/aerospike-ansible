@@ -5,30 +5,71 @@
     "{{ groups.aerospike_cluster }}"
   vars:
       cluster_ip_addresses: []
-
-- name: "Get available nvme drives"
-  shell:
-    cmd: "ls /dev/nvme*p* | grep -v nvme0 | grep -v p1"
-  register: nvme_drives_list_output
   
-- name: Store nvme drive list as a fact
-  set_fact: 
-    nvme_devices : "{{ nvme_drives_list_output.stdout_lines }}"
+- block:
+  - name: "Get available nvme drives"
+    shell:
+      cmd: "ls /dev/nvme*p* | grep -v nvme0"
+    register: nvme_drives_list_output
 
-- name: "Get all flash device"
-  shell:
-    cmd: "ls /dev/nvme*p* | grep -v nvme0 | grep p1"
-  register: nvme_drives_list_output
+  - name: Store nvme drive list as a fact
+    set_fact: 
+      nvme_devices : "{{ nvme_drives_list_output.stdout_lines }}"    
+  when: not all_flash
 
-- name: "Store all flash nvme drive list as a fact"
-  set_fact: 
-    all_flash_device : "{{ nvme_drives_list_output.stdout_lines }}"
+- block:
+  - name: "Get available nvme drives"
+    shell:
+      cmd: "ls /dev/nvme*p* | grep -v nvme0 | grep -v p1"
+    register: nvme_drives_list_output
 
-- name: "Format and mount all flash device"
-  shell: |
-    mkfs.xfs {{ all_flash_device[0] }}
-    mkdir /nvme_all_flash
-    mount {{ all_flash_device[0] }} /nvme_all_flash
+  - name: Store nvme drive list as a fact
+    set_fact: 
+      nvme_devices : "{{ nvme_drives_list_output.stdout_lines }}"
+
+  - name: "Get all flash device"
+    shell:
+      cmd: "ls /dev/nvme*p* | grep -v nvme0 | grep p1"
+    register: nvme_drives_list_output
+
+  - name: "Store all flash nvme drive list as a fact"
+    set_fact: 
+      all_flash_device : "{{ nvme_drives_list_output.stdout_lines }}"
+
+  - name: "Format and mount all flash device"
+    shell: |
+      all_flash_array=($(ls /dev/nvme*p* | grep -v nvme0 | grep p1))
+      for i in ${!all_flash_array[@]}
+      do
+        mkfs.xfs -f ${all_flash_array[$i]}
+        if [ ! -d /nvme_all_flash_${i} ]
+        then
+          mkdir /nvme_all_flash_${i}
+        fi
+        if [ ! "$(df -kh | grep ${all_flash_array[$i]} | grep nvme_all_flash_${i})" ]
+        then
+          mount ${all_flash_array[$i]} /nvme_all_flash_${i}
+        fi
+      done
+
+  - name: "Get all flash device mount points"
+    shell:
+      cmd: "cat /proc/mounts | grep all_flash | awk '{print $2}'"
+    register: all_flash_list_output
+    
+  - name: Store all flash mount points as a fact
+    set_fact: 
+      all_flash_devices : "{{ all_flash_list_output.stdout_lines }}"
+
+  - name: "Get total all flash volume size"
+    shell:
+      cmd: "df -kh -BG | grep all_flash |  sed 's/G//' | awk '{sum=$2 -1}END{print sum}'"
+    register: all_flash_data_size
+
+  - name: Store all flash data size as a fact
+    set_fact: 
+      flash_data_size : "{{ all_flash_data_size.stdout_lines[0] }}"
+  when: all_flash
 
 - name: Copy configuration
   template:

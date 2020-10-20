@@ -15,6 +15,13 @@
 
 PARTITION_COUNT={{ partitions_per_device }}
 
+# Ensure no mounted all flash partitions
+for mount in $(cat /proc/mounts | grep all_flash | awk '{print $2}')
+do 
+       sudo umount $mount
+       echo "Unmounting $mount"
+done
+
 for NVME_DRIVE in /dev/nvme*n1
 do
 	if [ ! $NVME_DRIVE == /dev/nvme0n1 ]
