@@ -1,0 +1,394 @@
+{
+  "version": "2.0",
+  "dsv_config": {
+    "delimiter": ",",
+    "n_columns_datafile": 53,
+    "header_exist": false
+  },
+  "mappings": [
+    {
+      "key": {
+        "column_position": 1,
+        "type": "integer"
+      },
+      "set": "nyc-taxi-data",
+      "bin_list": [
+        {
+          "name": "id",
+          "value": {
+            "column_position": 1,
+            "type": "integer"
+          }
+        },
+        {
+          "name": "vendor_id",
+          "value": {
+            "column_position": 2,
+            "type": "string"
+          }
+        },
+        {
+          "name": "pkup_datetime",
+          "value": {
+            "column_position": 3,
+            "type": "timestamp",
+            "encoding": "yyyy-MM-dd hh:mm:ss",
+            "dst_type": "integer"
+          }
+        },
+        {
+          "name": "drop_datetime",
+          "value": {
+            "column_position": 4,
+            "type": "timestamp",
+            "encoding": "yyyy-MM-dd hh:mm:ss",
+            "dst_type": "integer"
+          }
+        },
+        {
+          "name": "store_fwd_flag",
+          "value": {
+            "column_position": 5,
+            "type": "string"
+          }
+        },
+        {
+          "name": "rate_code_id",
+          "value": {
+            "column_position": 6,
+            "type": "integer"
+          }
+        },
+        {
+          "name": "pkup_longitude",
+          "value": {
+            "column_position": 7,
+            "type": "float"
+          }
+        },
+        {
+          "name": "pkup_latitude",
+          "value": {
+            "column_position": 8,
+            "type": "float"
+          }
+        },
+        {
+          "name": "drop_longitude",
+          "value": {
+            "column_position": 9,
+            "type": "float"
+          }
+        },
+        {
+          "name": "drop_latitude",
+          "value": {
+            "column_position": 10,
+            "type": "float"
+          }
+        },
+        {
+          "name": "passenger_cnt",
+          "value": {
+            "column_position": 11,
+            "type": "integer"
+          }
+        },
+        {
+          "name": "trip_distance",
+          "value": {
+            "column_position": 12,
+            "type": "float"
+          }
+        },
+        {
+          "name": "fare_amount",
+          "value": {
+            "column_position": 13,
+            "type": "float"
+          }
+        },
+        {
+          "name": "extra",
+          "value": {
+            "column_position": 14,
+            "type": "float"
+          }
+        },
+        {
+          "name": "mta_tax",
+          "value": {
+            "column_position": 15,
+            "type": "float"
+          }
+        },
+        {
+          "name": "tip_amount",
+          "value": {
+            "column_position": 16,
+            "type": "float"
+          }
+        },
+        {
+          "name": "tolls_amount",
+          "value": {
+            "column_position": 17,
+            "type": "float"
+          }
+        },
+        {
+          "name": "ehail_fee",
+          "value": {
+            "column_position": 18,
+            "type": "float"
+          }
+        },
+        {
+          "name": "improve_charge",
+          "value": {
+            "column_position": 19,
+            "type": "float"
+          }
+        },
+        {
+          "name": "total_amount",
+          "value": {
+            "column_position": 20,
+            "type": "float"
+          }
+        },
+        {
+          "name": "payment_type",
+          "value": {
+            "column_position": 21,
+            "type": "string"
+          }
+        },
+        {
+          "name": "trip_type",
+          "value": {
+            "column_position": 22,
+            "type": "integer"
+          }
+        },
+        {
+          "name": "pkup_longitude",
+          "value": {
+            "column_position": 23,
+            "type": "float"
+          }
+        },
+        {
+          "name": "pkup_latitude",
+          "value": {
+            "column_position": 24,
+            "type": "float"
+          }
+        },
+        {
+          "name": "drop_longitude",
+          "value": {
+            "column_position": 25,
+            "type": "float"
+          }
+        },
+        {
+          "name": "drop_latitude",
+          "value": {
+            "column_position": 26,
+            "type": "float"
+          }
+        },
+        {
+          "name": "cab_type",
+          "value": {
+            "column_position": 27,
+            "type": "string"
+          }
+        },
+        {
+          "name": "rain",
+          "value": {
+            "column_position": 28,
+            "type": "float"
+          }
+        },
+        {
+          "name": "snow_depth",
+          "value": {
+            "column_position": 29,
+            "type": "float"
+          }
+        },
+        {
+          "name": "snowfall",
+          "value": {
+            "column_position": 30,
+            "type": "float"
+          }
+        },
+        {
+          "name": "max_temp",
+          "value": {
+            "column_position": 31,
+            "type": "integer"
+          }
+        },
+        {
+          "name": "min_temp",
+          "value": {
+            "column_position": 32,
+            "type": "integer"
+          }
+        },
+        {
+          "name": "wind",
+          "value": {
+            "column_position": 33,
+            "type": "float"
+          }
+        },
+        {
+          "name": "pkup_2010_gid",
+          "value": {
+            "column_position": 34,
+            "type": "integer"
+          }
+        },
+        {
+          "name": "pkup_ctlabel",
+          "value": {
+            "column_position": 35,
+            "type": "string"
+          }
+        },
+        {
+          "name": "pkup_borocode",
+          "value": {
+            "column_position": 36,
+            "type": "integer"
+          }
+        },
+        {
+          "name": "pkup_boroname",
+          "value": {
+            "column_position": 37,
+            "type": "string"
+          }
+        },
+        {
+          "name": "pkup_ct2010",
+          "value": {
+            "column_position": 38,
+            "type": "string"
+          }
+        },
+        {
+          "name": "pkup_broct2010",
+          "value": {
+            "column_position": 39,
+            "type": "string"
+          }
+        },
+        {
+          "name": "pkup_cdelig",
+          "value": {
+            "column_position": 40,
+            "type": "string"
+          }
+        },
+        {
+          "name": "pkup_ntacode",
+          "value": {
+            "column_position": 41,
+            "type": "string"
+          }
+        },
+        {
+          "name": "pkup_ntaname",
+          "value": {
+            "column_position": 42,
+            "type": "string"
+          }
+        },
+        {
+          "name": "pkup_puma",
+          "value": {
+            "column_position": 43,
+            "type": "string"
+          }
+        },
+        {
+          "name": "drop_2010_gid",
+          "value": {
+            "column_position": 44,
+            "type": "integer"
+          }
+        },
+        {
+          "name": "drop_ctlabel",
+          "value": {
+            "column_position": 45,
+            "type": "string"
+          }
+        },
+        {
+          "name": "drop_borocode",
+          "value": {
+            "column_position": 46,
+            "type": "integer"
+          }
+        },
+        {
+          "name": "drop_boroname",
+          "value": {
+            "column_position": 47,
+            "type": "string"
+          }
+        },
+        {
+          "name": "drop_ct2010",
+          "value": {
+            "column_position": 48,
+            "type": "string"
+          }
+        },
+        {
+          "name": "drop_broct2010",
+          "value": {
+            "column_position": 49,
+            "type": "string"
+          }
+        },
+        {
+          "name": "drop_cdelig",
+          "value": {
+            "column_position": 50,
+            "type": "string"
+          }
+        },
+        {
+          "name": "drop_ntacode",
+          "value": {
+            "column_position": 51,
+            "type": "string"
+          }
+        },
+        {
+          "name": "drop_ntaname",
+          "value": {
+            "column_position": 52,
+            "type": "string"
+          }
+        },
+        {
+          "name": "drop_puma",
+          "value": {
+            "column_position": 53,
+            "type": "string"
+          }
+        }
+      ]
+    }
+  ]
+}
