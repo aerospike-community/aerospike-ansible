@@ -13,7 +13,7 @@ aerospike_client_per_az_count: 1
 monitoring_instance_type: "{{ cluster_instance_type }}"
 
 # Spark worker count
-spark_instance_type: c5d.large
+spark_instance_type: "{{ cluster_instance_type }}"
 spark_worker_per_az_count: 1
 
 # Installation configuration

@@ -56,7 +56,7 @@ The first 10min deal with setting up the pre-requisites (virtualenv/ansible/boto
 
 Everything you are likely to want to change can be found in  ```vars/cluster-config.yml``` 
 
-- **instance_type** - default = c5d.large
+- **cluster_instance_type** - default = c5d.large
 - **cluster_hosts_per_az** - default = 1
 - **partitions_per_device** - default = 4 ( nvme volumes will automatically be partitioned for you )
 - **enterprise** - default = false to allow single click setup of Community. If true, a feature key location must be specified ( see below )
@@ -71,6 +71,14 @@ Everything you are likely to want to change can be found in  ```vars/cluster-con
 - **replication_factor** - default = 2
 - **aerospike_mem_pct** - fraction of available memory to allocate to the 'test namespace'. Default = 80%
 - **feature_key** - path for an Enterprise feature key. Undefined by default so the setup works out of the box.
+
+- **client_instance_type** - instance type used for the Aerospike java client - defaults to 
+- **aerospike_client_per_az_count** - clients per az in **client_az_list**
+
+- **monitoring_instance_type** - instance type used for monitoring instance - defaults to **cluster_instance_type**
+
+- **spark_instance_type** - instance type used for Spark workers - defaults to **cluster_instance_type**
+- **spark_worker_per_az_count** - spark workers per az in **cluster_az_list**
 
 On the AWS side you can modify via ```vars/aws-config.yml```
 
@@ -184,6 +192,18 @@ and asinfo
 asinfo --tls-enable --tls-name=aerospike_ansible_demo_cluster --tls-cafile=/etc/aerospike/certs/ca.crt -p 4333 <YOUR_COMMAND_HERE>
 ```
 
+## Aerospike Connect For Spark
+
+```ansible-playbook spark-cluster-setup.yml``` will create a Spark cluster, enabled with Aerospike Spark Connect. The playbook sets up **spark_worker_per_az_count** instances of type **spark_instance_type** in each of the **cluster_az_list** availability zones.
+
+The following can be set in ```vars\spark-vars.yml```
+
+- **scala_version** 
+- **spark_version**
+- **hadoop_version**
+- **aerospike_spark_connect_version** 
+
+Note these will change over time. **spark_version** in particular will need modification when the current Spark version changes (else Spark download will fail).
 
 ## SSH
 
