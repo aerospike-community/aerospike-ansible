@@ -205,6 +205,8 @@ The following can be set in ```vars\spark-vars.yml```
 
 Note these will change over time. **spark_version** in particular will need modification when the current Spark version changes (else Spark download will fail).
 
+At [Aerospike Connect for Spark](https://dev.to/aerospike/using-aerospike-connect-for-spark-3poi) you can find an article going through this setup process in detail, including a full, at scale example. It's a 5 minute read.
+
 ## SSH
 
 If you see
