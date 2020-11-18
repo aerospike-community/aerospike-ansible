@@ -91,7 +91,7 @@ On the AWS side you can modify via ```vars/aws-config.yml```
 
 All the configuration options above can be modified via the command line using the ```--extra-vars``` option and a JSON formatted argument. e.g.
 
-```ansible-playbook aws-setup-plus-aerospike-install.yml --extra-vars="{'aerospike-version':'4.8.0.3', instance_type:'c5d.2xlarge'}"```
+```ansible-playbook aws-setup-plus-aerospike-install.yml --extra-vars="{'aerospike-version':'4.8.0.3', cluster_instance_type:'c5d.2xlarge'}"```
 
 Alternatively, ```vars/cluster-config.yml``` can be modified.
 
