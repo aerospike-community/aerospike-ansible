@@ -6,7 +6,6 @@ Put demo stuff in separate branch. Include scripts
 Change command prompt so we see function on line ( quick ssh )
 Don't re-partition
 Secure Grafana with a password
-Parameterize ec2 ssh user
 Allow for multiple clusters using templating of inventory/hosts
 
 Cosmetic
