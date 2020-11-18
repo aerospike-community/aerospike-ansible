@@ -23,3 +23,7 @@ subnet_cidr: 10.0.0.0/22 # IP range permitted for intra-cluster transport
 # By default public ports (Grafana(4000),Prometheus(9090),Spark Web ports (8080,8081))
 # will be locked to your public ip. If you want to use a different address range uncomment the line below
 # public_port_access_cidr: "10.0.0.1/32" 
+
+# User used to access your instances using the quick access ssh scripts. Change if not using AWS
+remote_user: "ec2-user"
+
