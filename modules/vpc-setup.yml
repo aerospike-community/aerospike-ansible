@@ -86,7 +86,7 @@
         - "{{ grafana_port }}"
         - "{{ spark_master_web_port }}"
         - "{{ spark_worker_web_port }}"
-        cidr_ip: "{{ ipify_public_ip }}/32"
+        cidr_ip: "{{public_port_access_cidr if public_port_access_cidr is defined else ipify_public_ip + '/32' }}"
       - proto: tcp 
         ports: 
         - "{{ service_port }}"

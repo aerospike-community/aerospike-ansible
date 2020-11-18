@@ -156,6 +156,8 @@ Select Home -> Aerospike -> Namespace View to see your first dashboard.
 
 Follow the instructions in [Using the benchmarking client](#using-the-benchmarking-client) to generate read/write activity that you can watch
 
+Note that the Grafana and Prometheus ports (4000 & 9090) are locked to 'your' IP address. If you want to lock to a different address range, uncomment ```public_port_access_cidr``` in ```vars/aws-config.yml``` and change to the required range.
+
 ## Recipes
 
 In the recipe section are some assets allowing support of one touch rolling upgrades and cluster moves - as used in my Summit 2020 talk. Watch this space for full scripts.
@@ -208,6 +210,8 @@ Note these will change over time. **spark_version** in particular will need modi
 
 At [Aerospike Connect for Spark](https://dev.to/aerospike/using-aerospike-connect-for-spark-3poi) you can find an article going through this setup process in detail, including a full, at scale example. It's a 5 minute read.
 
+Note that the Spark web ports (8080 & 8081) are locked to 'your' IP address. If you want to lock to a different address range, uncomment ```public_port_access_cidr``` in ```vars/aws-config.yml``` and change to the required range.
+
 ## SSH
 
 If you see
@@ -217,6 +221,8 @@ Received disconnect from 18.207.231.181 port 22:2: Too many authentication failu
 or similar when using Ansible try adding
 
 IdentitiesOnly=yes to your .ssh/config file
+
+Note that the ssh port (22) is locked to 'your' IP address. If you want to lock to a different address range, uncomment ```public_port_access_cidr``` in ```vars/aws-config.yml``` and change to the required range.
 
 ## Other
 
