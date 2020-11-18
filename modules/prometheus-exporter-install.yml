@@ -27,7 +27,7 @@
       cd $GOPATH/src/github.com/aerospike/{{ exporter_name }}
       go build -o {{ exporter_name }} .
       mkdir -p /etc/{{ exporter_name }}
-      curl https://raw.githubusercontent.com/aerospike/{{ exporter_name }}/master/aeroprom.conf.dev -o {{ exporter_config_path }}
+      curl https://raw.githubusercontent.com/aerospike/{{ exporter_name }}/master/ape.toml -o {{ exporter_config_path }}
       sed -i 's/^db_host.*$/db_host="localhost"/' {{ exporter_config_path }}
       sed -i "s/^tags.*$/tags=['{{ cluster_id }}']/" {{ exporter_config_path }}
       rm /usr/local/bin/{{exporter_name}}
