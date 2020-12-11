@@ -16,6 +16,14 @@
         msg: "Aerospike service is not installed - executing install steps"
 
     - block:
+      # tools requires python3
+      - name: Install python3
+        package:
+          name:
+            - python3
+          state: latest
+        become: yes
+
       - name: "stat {{ feature_key_path }}"
         local_action: "stat path={{ feature_key_path }}"
         become: no
@@ -84,7 +92,7 @@
       shell: 
         cmd: "service aerospike start"
 
-    - block:
+    - block:      
       - name: Copy roster set script
         template:
           src: "assets/strong-consistency/roster-set.sh.j2"
