@@ -29,7 +29,7 @@
   - name: "Utility script setup"
     import_tasks: modules/utility-script-setup.yml
 
-  when: groups[instance_tag] | length < reqd_count | int
+  when: groups[instance_tag] | default([]) | length < reqd_count | int
   vars:
     reqd_count : "{{ instance_count * az_list | length}}"
 

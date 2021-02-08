@@ -39,7 +39,7 @@ all_flash: false
 monitoring_enabled: true
 
 # Distribution
-aerospike_distribution: "el6" 
+aerospike_distribution: "el7" 
 # You can use el6 or 7 with Amazon 2 Linux AMI found below. 
 # If you want to use a debian or ubuntu or install, you will need to change the ami_locator_string below
 # !!! Newsflash - looks like el7 installs won't auto start as /var/log/aerospike doesn't get created, so stick to el6 while you see this message

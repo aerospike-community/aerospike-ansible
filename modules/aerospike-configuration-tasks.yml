@@ -1,6 +1,6 @@
 - name: Get cluster ip addresses
   set_fact:
-    cluster_ip_addresses: "{{ cluster_ip_addresses }} + [ '{{ hostvars[item].ec2_private_ip_address }}' ]"
+    cluster_ip_addresses: "{{ cluster_ip_addresses }} + [ '{{ hostvars[item].private_ip_address }}' ]"
   with_items: 
     "{{ groups.aerospike_cluster }}"
   vars:
@@ -79,7 +79,15 @@
     owner: root
     group: root
   vars:
-    ip_address: "{{ hostvars[inventory_hostname].ec2_private_ip_address }}"    
+    ip_address: "{{ hostvars[inventory_hostname].private_ip_address }}"    
+
+- name: Set up log directory
+  file: 
+    path: "/var/log/aerospike"
+    state: directory    
+    owner: root
+    group: root
+    mode: 0755
 
 - block:
   - name: Check whether encryption key exists already
