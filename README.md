@@ -20,7 +20,9 @@ You need your AWS credentials on disk as per https://docs.aws.amazon.com/cli/lat
 
 The SSH change given in [SSH](#ssh) is recommended
 
-A full list of commands to set up is given in [commands-for-setup.md](recipes/commands-for-setup.md)
+A full list of commands to set up on a linux platform is given in [linux-commands-for-setup.md](recipes/linux-commands-for-setup.md)
+
+For macOS install see [macos-commands-for-setup.md](recipes/macos-commands-for-setup.md)
 
 Once you have done all this
 
@@ -43,6 +45,12 @@ will set up the monitoring stack including Prometheus and Grafana. You can then 
 A [video](https://youtu.be/fWKACehyJHc) showing end to end setup of the full Aerospike cluster/client/monitoring stack on a fresh Vagrant instance is available.
 
 The first 10min deal with setting up the pre-requisites (virtualenv/ansible/boto/IAM) with the remainder showing use of the playbooks.
+
+## Client Container Image
+
+The pre-requisites listed above can be troublesome to install given changes in versions of the various requirements. 
+
+To that end, a containerised image containing all the pre-requisites can be built or pulled from DockerHub. See [this README](docker/README.md) for details.
 
 ## Other playbooks
 
