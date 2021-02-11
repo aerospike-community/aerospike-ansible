@@ -121,7 +121,7 @@
       region: "{{ aws_region }}"
       filters:
         instance-state-name: [ "pending", "running" ]  
-        ip-address: "{{ groups.aerospike_spark[0] }}"
+        dns-name: "{{ groups.aerospike_spark[0] }}"
         "tag:group": "{{ spark_tag }}"   
     register: spark_info
 
@@ -144,7 +144,7 @@
       region: "{{ aws_region }}"
       filters:
         instance-state-name: [ "pending", "running" ]  
-        ip-address: "{{ groups.aerospike_spark[0] }}"
+        dns-name: "{{ groups.aerospike_spark[0] }}"
         "tag:group": "{{ spark_tag }}"   
     register: spark_info
 
