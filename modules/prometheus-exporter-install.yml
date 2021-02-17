@@ -6,9 +6,10 @@
       
 - block:    
   - name: Install git/go
+  # Use Go 1.13. Higher versions of Go require use of Subject Alterative Name in certificates
     package:
       name:
-        - go
+        - golang-1.13*
         - git
       state: latest
 
