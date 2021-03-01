@@ -48,7 +48,7 @@ aerospike_version: "latest"
 # Use full version number e.g. 4.8.0.8 'latest' is also recognized. 
 
 # AMI - will use the most recent Amazon AMI matching the name below
-ami_locator_string: "amzn2-ami-hvm-2.0.*-x86_64-gp2*"
+ami_locator_string: "amzn2-ami-hvm-2.0.*-x86_64-gp2"
 
 # Replication factor
 replication_factor: 2
