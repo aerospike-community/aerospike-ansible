@@ -106,55 +106,51 @@
       become: yes
     when: hostvars[inventory_hostname].services[prometheus_service_name] is not defined
 
-  # When Grafana is not installed
-  - block:
-    - name: Get dashboards
-      git:
-        clone: "yes"
-        dest: "{{ ansible_env.HOME }}/aerospike-monitoring"
-        repo: "https://github.com/aerospike/aerospike-monitoring.git"    
+  - name: Get dashboards
+    git:
+      clone: "yes"
+      dest: "{{ ansible_env.HOME }}/aerospike-monitoring"
+      repo: "https://github.com/aerospike/aerospike-monitoring.git"    
 
-    - name: Configure Grafana
-      shell: |
-        sed -i 's!^;provisioning.*$!provisioning = /etc/grafana/provisioning!' /etc/grafana/grafana.ini
-        sed -i 's!^.*http_port.*$!http_port = {{ grafana_port }}!' /etc/grafana/grafana.ini
-      become: yes
+  - name: Configure Grafana
+    shell: |
+      sed -i 's!^;provisioning.*$!provisioning = /etc/grafana/provisioning!' /etc/grafana/grafana.ini
+      sed -i 's!^.*http_port.*$!http_port = {{ grafana_port }}!' /etc/grafana/grafana.ini
+    become: yes
 
-    - name: Add Grafana configuration files
-      copy:
-        src: "{{ item }}"
-        dest: "/etc/grafana/provisioning"
-        directory_mode: 0755
-        owner: root
-        group: root
-        mode: 0755
-      loop:
-      - "assets/grafana/dashboards"
-      - "assets/grafana/datasources"
+  - name: Add Grafana configuration files
+    copy:
+      src: "{{ item }}"
+      dest: "/etc/grafana/provisioning"
+      directory_mode: 0755
+      owner: root
+      group: root
+      mode: 0755
+    loop:
+    - "assets/grafana/dashboards"
+    - "assets/grafana/datasources"
 
-    - name: Add Aerospike dashboards
-      copy:
-        src: "{{ ansible_env.HOME }}/aerospike-monitoring/config/grafana/dashboards"
-        remote_src: yes
-        dest: "/var/lib/grafana"
-        directory_mode: 0755
-        owner: root
-        group: root
-        mode: 0755
+  - name: Add Aerospike dashboards
+    copy:
+      src: "{{ ansible_env.HOME }}/aerospike-monitoring/config/grafana/dashboards"
+      remote_src: yes
+      dest: "/var/lib/grafana"
+      directory_mode: 0755
+      owner: root
+      group: root
+      mode: 0755
 
-    - name: Add Summit Demo dashboards
-      copy:
-        src: "assets/grafana/summit-demo/{{ item }}"
-        dest: "/var/lib/grafana/dashboards"
-        owner: root
-        group: root
-        mode: 0777
-      loop:
-      - Summit-Talk-01.json
-      - Summit-Talk-02.json
-      - Summit-Talk-03.json
-
-    when: hostvars[inventory_hostname].services[grafana_service_name] is not defined
+  - name: Add Summit Demo dashboards
+    copy:
+      src: "assets/grafana/summit-demo/{{ item }}"
+      dest: "/var/lib/grafana/dashboards"
+      owner: root
+      group: root
+      mode: 0777
+    loop:
+    - Summit-Talk-01.json
+    - Summit-Talk-02.json
+    - Summit-Talk-03.json
 
   - name: Start prometheus, if not started
     service:
