@@ -32,7 +32,7 @@
       sed -i 's/^db_host.*$/db_host="localhost"/' {{ exporter_config_path }}
       sed -i 's|^log_file\s*=.*$|log_file="/var/log/aerospike/{{ exporter_name }}.log"|' {{ exporter_config_path }}
       sed -i 's|^log_level\s*=.*$|log_level="info"|' {{ exporter_config_path }}
-      sed -i "s/^tags.*$/tags=['{{ cluster_id }}']/" {{ exporter_config_path }}
+      sed -i "s/^labels.*$/labels={cluster_batch_tag='{{ cluster_batch_tag }}'}/" {{ exporter_config_path }}
       if [ "{{ tls_enabled }}" == "True" ]
       then
       # Use the pipe separator for sed to avoid difficulties with / characters in paths

@@ -207,7 +207,7 @@
       "styles": [
         {
           "$$hashKey": "object:5749",
-          "alias": "Rack ID",
+          "alias": "Cluster ID",
           "align": "auto",
           "colorMode": null,
           "colors": [
@@ -218,7 +218,7 @@
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
           "decimals": 0,
           "mappingType": 1,
-          "pattern": "Value",
+          "pattern": "cluster_batch_tag",
           "thresholds": [],
           "type": "number",
           "unit": "none"
@@ -242,7 +242,7 @@
       ],
       "targets": [
         {
-          "expr": "aerospike_namespace_rack_id",
+          "expr": "aerospike_node_up",
           "format": "table",
           "instant": true,
           "interval": "",

@@ -60,7 +60,7 @@ aerospike_mem_pct: 80
 rack_id : 101
 
 # Cluster ID - used by Prometheus exporter
-cluster_id: "CL-01"
+cluster_batch_tag: "CL-01"
 
 
 

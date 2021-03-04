@@ -41,7 +41,7 @@
     instance_tags:
        group: "{{ instance_tag }}"
        group-plus-az: "{{ group_plus_az_tag_value }}"
-       cluster_id : "{{ cluster_id }}"         
+       cluster_batch_tag : "{{ cluster_batch_tag }}"         
     wait: yes
   vars:
     group_plus_az_tag_value : "{{ instance_tag }} : {{ subnet.availability_zone }}"    
