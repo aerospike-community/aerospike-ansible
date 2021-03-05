@@ -67,7 +67,7 @@
         },
         {
           "$$hashKey": "object:5900",
-          "alias": "Cluster ID",
+          "alias": "Cluster Batch",
           "align": "center",
           "colorMode": null,
           "colors": [
