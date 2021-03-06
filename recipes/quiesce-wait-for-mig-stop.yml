@@ -3,7 +3,6 @@
   hosts: "{{ cluster_batch_tag }}:&{{ qualified_az_name }}"
   gather_facts: true
   become: yes
-  serial: 1
   vars_files:
   - ../vars/aws-config.yml
   vars:
@@ -45,6 +44,8 @@
   - ../vars/cluster-config.yml
   vars:
     qualified_az_name : "{{ aws_region | replace ('-','_') }}{{ az }}"    
+    # Requires user to override
+    sc: true
   tasks:
   - block:
     - name: Remove host from roster
@@ -55,7 +56,7 @@
         # Get current roster, extract namespace and observed nodes
         ROSTER_STRING=$($ASINFO -v 'roster:')
         NS=$(echo $ROSTER_STRING | sed 's/^ns=\([^:]*\).*$/\1/')
-        nodesString=$(echo $ROSTER_STRING | sed 's/^.*observed_nodes\=\(.*\)$/\1/')
+        nodesString=$(echo $ROSTER_STRING | sed 's/^.*\:roster\=\([^:]*\):.*$/\1/')
 
         # Get current node & remove it from the list of observed nodes
         CURRENT_NODE=$($ASINFO -v 'node')
@@ -65,6 +66,7 @@
         asInfoCommand="\"roster-set:namespace=${NS}\;nodes=${NEW_ROSTER}\""
         $ASINFO -v "$asInfoCommand"
 
+        echo $asInfoCommand
         if [ $? -eq 0 ]
         then
           echo "Roster set"
@@ -76,7 +78,7 @@
         asadm {% if tls_enabled %}--tls-enable --tls-name={{ cluster_name }} --tls-cafile=/etc/aerospike/certs/ca.crt -p {{ tls_service_port }} {% endif %} -e 'asinfo -v "recluster:"'
         $ASINFO -v 'roster:'
         echo "Roster set and reclustered"
-    when: strong_consistency
+    when: sc
 
   - name: Stop Aerospike service
     shell: 
