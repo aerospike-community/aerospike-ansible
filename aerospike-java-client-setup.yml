@@ -86,7 +86,7 @@
   - name: Build Aerospike Java Client
     shell: |
       cd {{ ansible_env.HOME }}/aerospike-client-java
-      JAVA_HOME=$(dirname $(dirname $(dirname $(readlink -f $(which java)))))
+      export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which javadoc))))
       {{ ansible_env.HOME }}/aerospike-client-java/build_all
 
   - name: "Copy benchmarking config to client"
