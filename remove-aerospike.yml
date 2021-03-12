@@ -2,6 +2,11 @@
   hosts: "aerospike_cluster"
   gather_facts: false
   become: yes
+  remote_user: "{{ os_config['remote_user'] }}"
+  vars_files:
+  - vars/cluster-config.yml
+  - vars/constants.yml
+  - vars/os-level-config.yml    
   tasks:    
   - name: Get service facts
     service_facts:
