@@ -5,7 +5,17 @@ Separate repo for ACT?
 Put demo stuff in separate branch. Include scripts
 Change command prompt so we see function on line ( quick ssh )
 Don't re-partition
-Allow for multiple clusters using templating of inventory/hosts
+Allow for multiple clusters using templating of inventory/hosts - almost there - search for hosts: where {{}} is not being used
+For teardown, kill all nodes together - should be able to do this now.
+Regression testing?
+Ability to ignore ipify
+Ubuntu work - need to check these scripts
+aerospike-monitoring-setup.yml - not working
+	recipes/summit-demo/quiesce-stop-aerospike.yml
+	recipes/upgrade-aerospike.yml
+	recipes/quiesce-wait-for-mig-stop.yml
+	spark-cluster-setup.yml
+
 
 Cosmetic
 ========

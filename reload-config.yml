@@ -1,5 +1,5 @@
 - name: "Copy Aerospike configuration to servers and restart"
-  hosts: "aerospike_cluster"
+  hosts: "{{ cluster_tag }}"
   gather_facts: true
   become: yes
   remote_user: "{{ os_config['remote_user'] }}"

@@ -36,7 +36,7 @@
   - meta: refresh_inventory
 
 - name: Set up benchmarking
-  hosts: "aerospike_client"
+  hosts: "{{ client_tag }}"
   gather_facts: true
   become: no
   remote_user: "{{ os_config['remote_user'] }}"
