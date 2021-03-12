@@ -38,17 +38,23 @@ all_flash: false
 # Monitoring
 monitoring_enabled: true
 
-# Distribution
-aerospike_distribution: "el7" 
-# Note that el6 id not supported for Aerospike 5.5 and higher
-# If you want to use a debian or ubuntu or install, you will need to change the ami_locator_string below
-
 # Version number
 aerospike_version: "latest" 
 # Use full version number e.g. 4.8.0.8 'latest' is also recognized. 
 
-# AMI - will use the most recent Amazon AMI matching the name below
-ami_locator_string: "amzn2-ami-hvm-2.0.*-x86_64-gp2"
+# Operating system - use ubuntu_os or amzn_linux_os inside the curly braces
+# This will determine the Aerospike distribution and ami used
+# Also remote user
+operating_system: "{{ ubuntu_os }}"
+
+# Distribution
+aerospike_distribution: "{{ os_config['aerospike_distribution'] }}" 
+
+# AMI - will use the most recent AMI matching the name below
+ami_locator_string: "{{ os_config['ami_locator_string'] }}"
+
+# Default user for instances - varies depending on OS choice
+remote_user: "{{ os_config['remote_user'] }}"
 
 # Replication factor
 replication_factor: 2

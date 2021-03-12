@@ -51,7 +51,9 @@
           mount ${all_flash_array[$i]} /nvme_all_flash_${i}
         fi
       done
-
+    args:
+      executable: /bin/bash      
+      
   - name: "Get all flash device mount points"
     shell:
       cmd: "cat /proc/mounts | grep all_flash | awk '{print $2}'"

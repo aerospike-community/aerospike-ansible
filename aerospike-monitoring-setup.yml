@@ -25,9 +25,14 @@
 
 
 - name: Set up Prometheus / Grafana 
-  hosts: "aerospike_monitoring"
+  hosts: "{{ monitoring_tag }}"
   gather_facts: true
   become: yes
+  remote_user: "{{ os_config['remote_user'] }}"
+  vars_files:
+  - vars/cluster-config.yml
+  - vars/constants.yml
+  - vars/os-level-config.yml  
   tasks:
   - name: Get service facts
     service_facts:
@@ -42,7 +47,7 @@
 
   # When Prometheus is *not* installed, do the full install
   - block:
-    - name: Some magic to help us install nodejs
+    - name: Some magic to help us install grafana on amzn linux
       shell: |
         curl --silent --location https://rpm.nodesource.com/setup_10.x | sudo bash -
         curl --silent --location https://dl.yarnpkg.com/rpm/yarn.repo | sudo tee /etc/yum.repos.d/yarn.repo
@@ -58,18 +63,41 @@
         sslverify=1
         sslcacert=/etc/pki/tls/certs/ca-bundle.crt
         EOF
+      when: operating_system == amzn_linux_os
+
+    - name: If Ubuntu, update package cache
+      shell: |
+        sudo apt update
+      when: operating_system == ubuntu_os
 
     - name: Install go/make/git/nodejs
       package:
         name:
-          - go
+          - "{{ os_config['go_package_name'] }}"
           - make
           - git
           - nodejs
           - yarn
+        state: latest
+      become: yes
+
+    - name: Install grafana (Ubuntu)
+      shell: |
+        sudo apt-get install -y apt-transport-https
+        sudo apt-get install -y software-properties-common wget
+        wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
+        echo "deb https://packages.grafana.com/oss/deb stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.list
+        sudo apt-get update
+        sudo apt-get install -y grafana    
+      when: operating_system == ubuntu_os
+
+    - name: Install grafana (Amzn Linux)
+      package:
+        name:
           - grafana
         state: latest
       become: yes
+      when: operating_system == amzn_linux_os
 
     - name: Set up prometheus config directory
       file: 

@@ -70,6 +70,10 @@ spark_master_port: 7077
 spark_master_web_port: 8080
 spark_worker_web_port: 8081
 
+# Operating system identifiers
+ubuntu_os: "ubuntu20"
+amzn_linux_os: "amznlinux2"
+
 # Other
 cluster_name: aerospike_ansible_demo_cluster
 aerospike_service_name: "aerospike.service"

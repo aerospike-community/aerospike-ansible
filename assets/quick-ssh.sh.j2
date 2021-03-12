@@ -50,5 +50,5 @@ fi
 
 source $IP_ADDRESS_LIST_SCRIPT 1>/dev/null
 # Use -o Identities only if you have a lot of keys in your ssh-agent - can lead to 'Too many authentication failures' error
-ssh -i {{ key_file_name }} -o IdentitiesOnly=yes {{remote_user}}@${{'{'}}{{ ip_array_name }}[$(($SELECTED_NODE - 1))]}
+ssh -i {{ key_file_name }} -o IdentitiesOnly=yes {{ remote_user }}@${{'{'}}{{ ip_array_name }}[$(($SELECTED_NODE - 1))]}
 

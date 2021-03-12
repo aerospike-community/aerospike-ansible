@@ -14,10 +14,11 @@
 - block:
   - name: Get Amazon Linux 2 AMI  x86_64 HVM gp2 AMI info
     ec2_ami_info:
+
       region: "{{ aws_region }}"     
+      owners: "{{ os_config['ami_owner'] }}"        
       filters:
-        name: "{{ ami_locator_string }}"
-        owner-alias: "amazon"        
+        name: "{{ os_config['ami_locator_string'] }}"
     register: ami_list
 
   - name: Get the latest AMI
