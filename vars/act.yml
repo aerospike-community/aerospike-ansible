@@ -1,0 +1,9 @@
+# Tag for ACT instances
+act_tag: "{{ cluster_identifier }}_act"
+
+# AZ to place ACT instances into
+act_az_list:
+  - "{{ cluster_az_list[0] }}"
+
+act_instance_type: "{{ cluster_instance_type }}"
+
