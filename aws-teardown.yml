@@ -20,12 +20,7 @@
       state: absent          
       region : "{{ aws_region }}"
       filters:
-        "tag:group": "{{ item }}"
-    with_items:
-    - "{{ cluster_tag }}"
-    - "{{ client_tag }}"
-    - "{{ monitoring_tag }}"
-    - "{{ spark_tag }}"
+        "tag:uber-group": "{{ cluster_identifier }}"
 
   - name: Remove Security Group
     ec2_group:
