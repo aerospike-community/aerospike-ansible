@@ -3,6 +3,12 @@
 
 - name: Get variables
   include_vars: vars/prometheus-exporter-vars.yml
+
+- block:
+  - name: If Ubuntu, update package cache
+    shell: |
+      sudo apt update
+  when: operating_system == ubuntu_os
       
 - block:    
   - name: Install git/go
