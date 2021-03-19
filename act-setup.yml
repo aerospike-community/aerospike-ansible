@@ -26,14 +26,15 @@
     import_tasks: modules/instance-setup.yml
 
 - name: Set up ACT
-  hosts: "aerospike_act"
+  hosts: "{{ act_tag }}"
   gather_facts: true
   become: no
   remote_user: "{{ os_config['remote_user'] }}"
   vars_files:
   - vars/cluster-config.yml
   - vars/constants.yml
-  - vars/os-level-config.yml      
+  - vars/os-level-config.yml    
+  - vars/act.yml  
   vars:
     act_util_dir: act-util
   tasks:
