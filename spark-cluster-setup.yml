@@ -33,19 +33,30 @@
   - meta: refresh_inventory
 
 - name: Set up Spark
-  hosts: "aerospike_spark"
+  hosts: "{{ spark_tag }}"
   gather_facts: false
   become: no
+  remote_user: "{{ os_config['remote_user'] }}"
+  vars_files:
+  - vars/cluster-config.yml
+  - vars/constants.yml
+  - vars/os-level-config.yml  
   tasks:
   - name: Import configuration properties
     include_vars: 
       dir: vars
 
+  - block:
+    - name: If Ubuntu, update package cache
+      shell: |
+          sudo apt update
+      when: operating_system == ubuntu_os
+
   - name: Install Java
     package:
       name:
-        - java-1.8.0-openjdk
-      state: latest
+        - "{{ os_config['java_package_name'] }}"
+      state: present
     become: yes
 
   - name: Install Scala
@@ -97,9 +108,14 @@
     become: yes
 
 - name: Start Master
-  hosts: "aerospike_spark[0]"
+  hosts: "{{ spark_tag }}[0]"
   gather_facts: false
   become: no
+  remote_user: "{{ os_config['remote_user'] }}"
+  vars_files:
+  - vars/cluster-config.yml
+  - vars/constants.yml
+  - vars/os-level-config.yml  
   tasks:
   - name: Start Master
     shell: |
@@ -107,9 +123,14 @@
       /spark/sbin/start-master.sh
 
 - name: Start Spark worker processes
-  hosts: "aerospike_spark"
+  hosts: "{{ spark_tag }}"
   gather_facts: false
   become: no
+  remote_user: "{{ os_config['remote_user'] }}"
+  vars_files:
+  - vars/cluster-config.yml
+  - vars/constants.yml
+  - vars/os-level-config.yml  
   tasks:
   - name: Import configuration properties
     include_vars: 
