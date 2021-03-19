@@ -94,7 +94,7 @@ On the AWS side you can modify via ```vars/aws-config.yml```
 - **aws_region** - default = us-east-1
 - **cluster_az_list** - default = [a,b,d] - c can be a little flaky
 - **client_az_list** - default is first az in the cluster az list
-- **use_ipify** - the ipify service is used to determine personal ip. It can be unreliable. If getting errors relating to the ipify_facts task, set use_ipify to false and set public_port_access_cidr to a mask that includes your IP e.g. <your_address>/32 or 0.0.0.0/0 ( matches everything )
+- **use_ipify** - default = true. the ipify service is used to determine personal ip. It can be unreliable. If getting errors relating to the ipify_facts task, set use_ipify to false and set public_port_access_cidr to a mask that includes your IP e.g. \<your_address\>/32 or 0.0.0.0/0 ( matches everything )
 
 ## Command Line Options
 
