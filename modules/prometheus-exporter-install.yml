@@ -16,7 +16,7 @@
     package:
       name:
         - python2
-        - golang-1.13*
+        - "{{ os_config['go_package_name'] }}"
         - git
       state: present
 

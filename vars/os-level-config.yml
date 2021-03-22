@@ -9,7 +9,9 @@ os_config_cache:
     ami_locator_string: "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223"
     aerospike_distribution: "ubuntu20"
     remote_user: "ubuntu"
-    go_package_name: "golang"
+    go_version: "1.14"
+    go_package_name: "golang-{{ required_prometheus_go_version }}"
+    go_path: "/usr/lib/go-{{ required_prometheus_go_version }}/bin"
 
   amznlinux2:
     java_package_name: java-1.8.0-openjdk
@@ -18,3 +20,6 @@ os_config_cache:
     aerospike_distribution: "el7"
     remote_user: "ec2-user"
     go_package_name: "go"
+
+required_prometheus_go_version: "1.14"
+required_prometheus_branch: "release-2.25"
