@@ -3,8 +3,12 @@
   hosts: "{{ cluster_batch_tag }}:&{{ qualified_az_name }}"
   gather_facts: true
   become: yes
+  remote_user: "{{ os_config['remote_user'] }}"
   vars_files:
   - ../vars/aws-config.yml
+  - ../vars/cluster-config.yml
+  - ../vars/constants.yml
+  - ../vars/os-level-config.yml    
   vars:
     qualified_az_name : "{{ aws_region | replace ('-','_') }}{{ az }}"
     sleep_time_for_wait_statements: 5  
@@ -16,32 +20,38 @@
 
   - name: Quiesce and wait for migrations to finish
     shell: |
-        asinfo -v 'quiesce:'
-        asadm -e "asinfo -v 'recluster:'"
+      asinfo -v 'quiesce:'
+      asadm -e "asinfo -v 'recluster:'"
 
-        # Wait for migrations to complete
-        while [[ $(asinfo -v 'cluster-stable:') =~ ^ERROR ]]
-        do 
-          sleep {{ sleep_time_for_wait_statements }}
-        done
+      # Wait for migrations to complete
+      while [[ $(asinfo -v 'cluster-stable:') =~ ^ERROR ]]
+      do 
+        sleep {{ sleep_time_for_wait_statements }}
+      done
 
-        # Wait for all clients to re-tend (get latest partition table )
-        sleep {{ client_tend_time }}     
-           
-        # Wait for proxying to reduce to zero
-        while [[ ! ($(asinfo -v 'statistics' -l | grep proxy_in_progress | awk 'BEGIN{FS="="}{print $2}') == 0) ]]
-        do
-          sleep {{ sleep_time_for_wait_statements }}
-        done
+      # Wait for all clients to re-tend (get latest partition table )
+      sleep {{ client_tend_time }}     
+         
+      # Wait for proxying to reduce to zero
+      while [[ ! ($(asinfo -v 'statistics' -l | grep proxy_in_progress | awk 'BEGIN{FS="="}{print $2}') == 0) ]]
+      do
+        sleep {{ sleep_time_for_wait_statements }}
+      done
+    args:
+      executable: /bin/bash        
+
 
 - name: "Serially remove hosts from roster, stop and terminate for {{ cluster_batch_tag}} hosts in {{ qualified_az_name }}"
   hosts: "{{ cluster_batch_tag }}:&{{ qualified_az_name }}"
   gather_facts: true
   become: yes
   serial: 1
+  remote_user: "{{ os_config['remote_user'] }}"
   vars_files:
   - ../vars/aws-config.yml
   - ../vars/cluster-config.yml
+  - ../vars/constants.yml
+  - ../vars/os-level-config.yml        
   vars:
     qualified_az_name : "{{ aws_region | replace ('-','_') }}{{ az }}"    
     # Requires user to override

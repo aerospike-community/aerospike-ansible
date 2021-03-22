@@ -1,8 +1,13 @@
 - name: Upgrading Aerospike
-  hosts: "aerospike_cluster"
+  hosts: "{{ cluster_tag }}"
   serial: 1
   gather_facts: true
   become: yes
+  remote_user: "{{ os_config['remote_user'] }}"
+  vars_files:
+  - ../vars/cluster-config.yml
+  - ../vars/constants.yml
+  - ../vars/os-level-config.yml  
   vars:
     sleep_time_for_wait_statements: 5
     client_tend_time: 60
@@ -79,6 +84,8 @@
         done
         # Restore migrate-max-num-incoming
         asadm -e "asinfo -v 'set-config:context=service;migrate-max-num-incoming=$MIG_MAX'"
+      args:
+        executable: /bin/bash        
 
     - name: Get Aerospike version
       shell: |
