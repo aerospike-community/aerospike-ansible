@@ -1,5 +1,5 @@
 - name: Uninstalling Aerospike
-  hosts: "{{ client_tag }}"
+  hosts: "{{ cluster_tag }}"
   gather_facts: false
   become: yes
   remote_user: "{{ os_config['remote_user'] }}"
