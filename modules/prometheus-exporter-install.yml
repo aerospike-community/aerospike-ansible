@@ -30,6 +30,7 @@
 
   - name: Build Prometheus exporter
     shell: |
+      PATH={{ os_config['go_path'] }}:$PATH
       eval $(go env)
       go get github.com/aerospike/{{ exporter_name }}
       cd $GOPATH/src/github.com/aerospike/{{ exporter_name }}

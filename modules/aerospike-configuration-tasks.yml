@@ -2,7 +2,7 @@
   set_fact:
     cluster_ip_addresses: "{{ cluster_ip_addresses }} + [ '{{ hostvars[item].private_ip_address }}' ]"
   with_items: 
-    "{{ groups.aerospike_cluster }}"
+    "{{ groups[cluster_tag] }}"
   vars:
       cluster_ip_addresses: []
   
