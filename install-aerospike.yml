@@ -17,8 +17,22 @@
     service_facts:
 
   - block:
+    - name: Installation previously completed message
+      debug: 
+        msg: "Aerospike is already installed - not re-installing"
+
+    - meta: end_play
+    when: hostvars[inventory_hostname].services[aerospike_service_name] is defined
+
+  - block:
     - debug: 
         msg: "Aerospike service is not installed - executing install steps"
+
+    - block:
+      - name: If Ubuntu, update package cache
+        shell: |
+          sudo apt update
+      when: operating_system == ubuntu_os
 
     - block:
       - name: "stat {{ feature_key_path }}"
@@ -114,12 +128,6 @@
         msg: "Aerospike install complete"
 
     when: ( hostvars[inventory_hostname].services[aerospike_service_name] is not defined ) or not(hostvars[inventory_hostname].services[aerospike_service_name].state == 'running')
-
-  - block:
-    - name: Installation previously completed message
-      debug: 
-        msg: "Aerospike is already installed - not re-installing"
-    when: hostvars[inventory_hostname].services[aerospike_service_name] is defined
 
   # May not be available as standard - this is the case on GCP
   - name: Install sysstat
