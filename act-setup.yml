@@ -10,7 +10,6 @@
     instance_type: "{{ act_instance_type }}"    
     vpc_tag: "{{ cluster_tag }}"
     az_list : "{{ act_az_list }}"        
-    cluster_hosts_per_az: 0
   tasks:
   - name: Import configuration properties
     include_vars: 
