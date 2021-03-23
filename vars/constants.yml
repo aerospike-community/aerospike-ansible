@@ -1,5 +1,5 @@
 # All AWS assets will be identified using this prefix + appropriate suffix
-cluster_identifier: aerospike
+cluster_identifier: bearospike
 
 # Tag for cluster instances
 cluster_tag: "{{ cluster_identifier }}_cluster"

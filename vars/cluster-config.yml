@@ -1,6 +1,10 @@
 # Instance types, hosts per zone, partitions per device
 # You may wish to change these
 # =================================
+
+# All AWS assets will be identified using this prefix + appropriate suffix. See constants.yml for more details.
+cluster_identifier: aerospike
+
 cluster_instance_type: c5d.large
 cluster_hosts_per_az : 1
 partitions_per_device: 4
@@ -45,7 +49,19 @@ aerospike_version: "latest"
 # Operating system - use ubuntu_os or amzn_linux_os inside the curly braces
 # This will determine the Aerospike distribution and ami used
 # Also remote user
-operating_system: "{{ ubuntu_os }}"
+operating_system: "{{ amzn_linux_os }}"
+
+# Replication factor
+replication_factor: 2
+
+# Proportion of total memory to assign to Aerospike - used in configuration template - see assets folder
+aerospike_mem_pct: 80
+
+# Cluster ID - used by Prometheus exporter
+cluster_batch_tag: "CL01"
+
+# Do not change the configuration below - it is driven by the choice of operating system
+# ======================================================================================
 
 # Distribution
 aerospike_distribution: "{{ os_config['aerospike_distribution'] }}" 
@@ -55,18 +71,5 @@ ami_locator_string: "{{ os_config['ami_locator_string'] }}"
 
 # Default user for instances - varies depending on OS choice
 remote_user: "{{ os_config['remote_user'] }}"
-
-# Replication factor
-replication_factor: 2
-
-# Proportion of total memory to assign to Aerospike - used in configuration template - see assets folder
-aerospike_mem_pct: 80
-
-# Default Rack ID
-rack_id : 101
-
-# Cluster ID - used by Prometheus exporter
-cluster_batch_tag: "CL01"
-
 
 

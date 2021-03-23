@@ -20,6 +20,7 @@ os_config_cache:
     aerospike_distribution: "el7"
     remote_user: "ec2-user"
     go_package_name: "go"
+    go_path: "/usr/lib/go/bin"
 
 required_prometheus_go_version: "1.14"
 required_prometheus_branch: "release-2.25"
