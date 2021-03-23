@@ -12,7 +12,7 @@
   register: vpc_subnets
 
 - block:
-  - name: Get Amazon Linux 2 AMI  x86_64 HVM gp2 AMI info
+  - name: "Get {{ os_config['os_name'] }} AMI"
     ec2_ami_info:
 
       region: "{{ aws_region }}"     

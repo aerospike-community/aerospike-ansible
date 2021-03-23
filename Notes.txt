@@ -5,9 +5,7 @@ Change command prompt so we see function on line ( quick ssh )
 Don't re-partition
 Regression testing?
 Make sure upgrade script works if not enterprise.
-Separate cluster name for act to avoid clobbering.
 Get rid of remote_user warning
-Change "Get Amazon Linux 2 AMI  x86_64 HVM gp2 AMI info"
 
 Bug
 ===

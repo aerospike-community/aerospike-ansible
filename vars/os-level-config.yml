@@ -4,6 +4,7 @@ os_config: "{{ os_config_cache[operating_system] }}"
 os_config_cache: 
 
   ubuntu20:
+    os_name: "Ubuntu 20.4"
     java_package_name: openjdk-8-jdk
     ami_owner: "099720109477"
     ami_locator_string: "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223"
@@ -14,6 +15,7 @@ os_config_cache:
     go_path: "/usr/lib/go-{{ required_prometheus_go_version }}/bin"
 
   amznlinux2:
+    os_name: "Amazon Linux 2"    
     java_package_name: java-1.8.0-openjdk
     ami_owner: "amazon"
     ami_locator_string: "amzn2-ami-hvm-2.0.*-x86_64-gp2"
