@@ -1,6 +1,3 @@
-# All AWS assets will be identified using this prefix + appropriate suffix
-cluster_identifier: bearospike
-
 # Tag for cluster instances
 cluster_tag: "{{ cluster_identifier }}_cluster"
 # Tag for client instances
@@ -26,7 +23,6 @@ download_path: "{{ download_file_dir }}/{{ download_file_name }}"
 # =======================================================
 scripts_directory_name: scripts
 aerospike_conf_file_name: aerospike.conf
-# key_file_name: .aws.pem
 ip_address_script_name: ip-address-list.sh
 quick_ssh_script_name: quick-ssh.sh 
 partition_script_name: partition-script.sh
