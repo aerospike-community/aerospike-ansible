@@ -4,8 +4,8 @@
       region: "{{ aws_region }}"
   register: ec2_key_result
 
-- name: "Save private key as {{ key_file_name }}"
-  copy: content="{{ ec2_key_result.key.private_key }}" dest="{{ key_file_name }}" mode=0400
+- name: "Save private key as {{ ansible_ssh_private_key_file }}"
+  copy: content="{{ ec2_key_result.key.private_key }}" dest="{{ ansible_ssh_private_key_file }}" mode=0400
   when: ec2_key_result.changed
 
 - name: Create VPC

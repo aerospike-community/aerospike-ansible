@@ -70,9 +70,9 @@
         region: "{{ aws_region }}"            
         name: "{{ cluster_tag }}"
 
-  - name : "Remove key file {{ key_file_name }}"
+  - name : "Remove key file {{ ansible_ssh_private_key_file }}"
     file:
-      path: "{{ key_file_name }}"
+      path: "{{ ansible_ssh_private_key_file }}"
       state: absent
 
   - name : "Remove generated scripts directory"
