@@ -7,3 +7,4 @@ scripts
 credentials
 tmp
 **/~$*
+test/*
