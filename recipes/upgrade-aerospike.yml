@@ -59,15 +59,18 @@
       debug:
         msg: "Aerospike version : {{ asversion.stdout_lines[0] }}"
 
-    - name: Quiesce, wait for proxying to finish, restart, wait for cluster stable
+    - name: "{% if enterprise %}Quiesce{% else %}No quiesce - expect transient client errors{% endif %}, wait for proxying to finish, restart, wait for cluster stable"
       shell: |
+        set -e
         # Record current migrate-max-num-incoming value
         MIG_MAX=$(asinfo -v 'get-config:context=service' -l | grep migrate-max-num-incoming | awk 'BEGIN{FS="="}{print $2}')      
         # Temporarily stop migrations
         asadm -e "asinfo -v 'set-config:context=service;migrate-max-num-incoming=0'"
-        # Quiesce
-        asinfo -v 'quiesce:'
+        {% if enterprise %}
+        # Quiesce and recluster if Enterprise
+        asinfo -v 'quiesce:' 
         asadm -e "asinfo -v 'recluster:'"
+        {% endif %}
         # Wait for all clients to re-tend (get latest partition table )
         sleep {{ client_tend_time }}        
         # Wait for proxying to reduce to zero
