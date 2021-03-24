@@ -4,7 +4,6 @@ Ansible
 Change command prompt so we see function on line ( quick ssh )
 Don't re-partition
 Regression testing?
-Make sure upgrade script works if not enterprise.
 
 Bug
 ===
@@ -20,7 +19,6 @@ Nice to have
 ============
 
 Refactor node-id generation to only do this if we're working with ip addresses
-
 
 When Finishing
 ===============
@@ -59,6 +57,7 @@ ACT Setup
 Ability to ignore ipify
 Allow for multiple clusters using templating of inventory/hosts - almost there - search for hosts: where {{}} is not being used
 Get rid of remote_user warning
+
 
 Output checked
 ==============
