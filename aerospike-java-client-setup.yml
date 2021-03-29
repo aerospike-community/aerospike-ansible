@@ -52,6 +52,7 @@
   - block:
     - name: If Ubuntu, update package cache
       shell: |
+        set -e
         sudo apt update
 
     - name: If Ubuntu remove existing Java - there's a compatibility issue with 11 and our client at present
@@ -85,6 +86,7 @@
 
   - name: Build Aerospike Java Client
     shell: |
+      set -e
       cd {{ ansible_env.HOME }}/aerospike-client-java
       export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which javadoc))))
       {{ ansible_env.HOME }}/aerospike-client-java/build_all
@@ -125,6 +127,7 @@
 
     - name: Import CA cert to key store
       shell: |
+        set -e
         JAVA_HOME=$(dirname $(dirname $(dirname $(readlink -f $(which java)))))
         # Remove without error if already exists
         set +e

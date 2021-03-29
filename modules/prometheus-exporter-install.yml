@@ -30,6 +30,7 @@
 
   - name: Build Prometheus exporter
     shell: |
+      set -e    
       PATH={{ os_config['go_path'] }}:$PATH
       eval $(go env)
       go get github.com/aerospike/{{ exporter_name }}
@@ -50,7 +51,10 @@
         sed -i 's|^db_port=.*$|db_port={{ tls_service_port }}|' {{ exporter_config_path }}
         sed -i 's|^node_tls_name=.*$|node_tls_name="{{ tls_name }}"|' {{ exporter_config_path }}
       fi
-      rm /usr/local/bin/{{exporter_name}}
+      if [ -e /usr/local/bin/{{exporter_name}} ]
+      then
+        rm /usr/local/bin/{{exporter_name}}
+      fi
       ln -s $(pwd)/{{ exporter_name }} /usr/local/bin/{{ exporter_name }}
       systemctl daemon-reload
   when: hostvars[inventory_hostname].services[exporter_service_name] is not defined

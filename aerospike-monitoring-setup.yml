@@ -49,6 +49,7 @@
   - block:
     - name: Some magic to help us install grafana on amzn linux
       shell: |
+        set -e
         curl --silent --location https://rpm.nodesource.com/setup_10.x | sudo bash -
         curl --silent --location https://dl.yarnpkg.com/rpm/yarn.repo | sudo tee /etc/yum.repos.d/yarn.repo
         rpm --import https://dl.yarnpkg.com/rpm/pubkey.gpg    
@@ -67,6 +68,7 @@
 
     - name: If Ubuntu, update package cache & do some specifics to install yarn
       shell: |
+        set -e      
         curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add  -
         echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list      
         sudo apt update
@@ -85,6 +87,7 @@
 
     - name: Install grafana (Ubuntu)
       shell: |
+        set -e      
         sudo apt-get install -y apt-transport-https
         sudo apt-get install -y software-properties-common wget
         wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
@@ -121,6 +124,7 @@
 
     - name: Install and start Prometheus
       shell: |
+        set -e
         eval $({{ os_config['go_path'] }}/go env)
         PATH={{ os_config['go_path'] }}:$PATH
         echo $GOPATH > /tmp/goroot.txt
@@ -145,6 +149,7 @@
 
   - name: Configure Grafana
     shell: |
+      set -e
       sed -i 's!^;provisioning.*$!provisioning = /etc/grafana/provisioning!' /etc/grafana/grafana.ini
       sed -i 's!^.*http_port.*$!http_port = {{ grafana_port }}!' /etc/grafana/grafana.ini
     become: yes

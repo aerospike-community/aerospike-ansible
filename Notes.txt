@@ -4,6 +4,14 @@ Ansible
 Change command prompt so we see function on line ( quick ssh )
 Don't re-partition
 Regression testing?
+Review shell commands for use of set -e
+	act-setup.yml
+	modules/prometheus-exporter-install.yml
+	recipes/quiesce-wait-for-mig-stop.yml
+	recipes/summit-demo/demo-assets.yml
+	recipes/summit-demo/quiesce-stop-aerospike.yml
+	recipes/upgrade-aerospike.yml
+	spark-cluster-setup.yml
 
 Bug
 ===

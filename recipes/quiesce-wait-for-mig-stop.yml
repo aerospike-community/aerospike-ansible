@@ -20,6 +20,7 @@
 
   - name: Quiesce and wait for migrations to finish
     shell: |
+      set -e    
       asinfo -v 'quiesce:'
       asadm -e "asinfo -v 'recluster:'"
 
@@ -60,6 +61,7 @@
   - block:
     - name: Remove host from roster
       shell: |
+        set -e
         # Get the form of the asinfo command that we need
         ASINFO="asinfo {% if tls_enabled %}--tls-enable --tls-name={{ cluster_name }} --tls-cafile=/etc/aerospike/certs/ca.crt -p {{ tls_service_port }} {% endif %}"
 

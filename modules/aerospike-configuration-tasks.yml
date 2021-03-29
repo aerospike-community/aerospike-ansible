@@ -38,6 +38,7 @@
 
   - name: "Format and mount all flash device"
     shell: |
+      set -e
       all_flash_array=($(ls /dev/nvme*p* | grep -v nvme0 | grep p1))
       for i in ${!all_flash_array[@]}
       do

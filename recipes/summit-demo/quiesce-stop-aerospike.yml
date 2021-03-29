@@ -15,6 +15,7 @@
 
   - name: Quiesce and stop Aerospike service
     shell: |
+      set -e    
       asinfo -v 'quiesce:'
       asadm -e "asinfo -v 'recluster:'"
       sleep 10

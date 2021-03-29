@@ -61,6 +61,7 @@
 
   - name: Install Scala
     shell: |
+      set -e    
       if [ -z $(which scala 2>/dev/null ) ]
       then
         cd /tmp
@@ -77,6 +78,7 @@
 
   - name: Install Spark
     shell: |
+      set -e    
       mkdir -p /etc/aerospike    
       if [ ! -d /spark ]
       then
@@ -90,6 +92,7 @@
 
   - name: Install Aerospike Spark Connect
     shell: |
+      set -e    
       if [ ! -f /spark/jars/aerospike-spark-assembly-{{ aerospike_spark_connect_version }}.jar ]
       then
         cd /tmp
@@ -119,6 +122,7 @@
   tasks:
   - name: Start Master
     shell: |
+      set -e
       /spark/sbin/stop-master.sh
       /spark/sbin/start-master.sh
 
@@ -148,6 +152,7 @@
 
   - name: Start agents
     shell: |
+      set -e    
       /spark/sbin/stop-slave.sh 
       /spark/sbin/start-slave.sh spark://{{ spark_info.instances[0].private_ip_address }}:{{ spark_master_port }}
 
