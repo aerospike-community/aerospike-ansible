@@ -21,7 +21,7 @@
       debug: 
         msg: "Aerospike is already installed - not re-installing"
 
-    - meta: end_play
+    - meta: end_host
     when: hostvars[inventory_hostname].services[aerospike_service_name] is defined
 
   - block:
