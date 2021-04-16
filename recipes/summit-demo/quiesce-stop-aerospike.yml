@@ -1,6 +1,6 @@
 ---
 - name: Quiesce + Stop Aeropsike
-  hosts: "{{ host_group }}"
+  hosts: "{{ host_group }}:&{{ cluster_tag }}"
   gather_facts: true
   become: yes
   remote_user: "{{ os_config['remote_user'] }}"
@@ -36,7 +36,7 @@
       state: absent
       region: "{{ aws_region }}"
       instance_ids: "{{ hostvars[item].instance_id }}"
-    loop: "{{ groups[host_group] }}"
+    loop: "{{ groups[host_group] | intersect(groups[cluster_tag]) }}"
 
 - name: Update Prometheus / Grafana 
   hosts: "{{ monitoring_tag }}"
