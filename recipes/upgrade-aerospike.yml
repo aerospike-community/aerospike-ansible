@@ -10,7 +10,7 @@
   - ../vars/os-level-config.yml  
   vars:
     sleep_time_for_wait_statements: 5
-    client_tend_time: 5
+    client_tend_time: 60
   tasks:
   - name: Get service facts
     service_facts:
