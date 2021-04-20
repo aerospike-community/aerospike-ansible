@@ -2,7 +2,6 @@
   "annotations": {
     "list": [
       {
-        "$$hashKey": "object:87",
         "builtIn": 1,
         "datasource": "-- Grafana --",
         "enable": true,
@@ -16,15 +15,103 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 11,
-  "iteration": 1589093424380,
+  "id": 2,
+  "iteration": 1618841229785,
   "links": [],
   "panels": [
     {
-      "columns": [],
       "datasource": "Aerospike Prometheus",
       "description": "",
-      "fontSize": "100%",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "right",
+            "filterable": false
+          },
+          "decimals": 0,
+          "displayName": "",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "service"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Service"
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Rack ID"
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cluster_batch_tag"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Cluster ID"
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          }
+        ]
+      },
       "gridPos": {
         "h": 7,
         "w": 7,
@@ -32,76 +119,135 @@
         "y": 0
       },
       "id": 26,
-      "pageSize": null,
-      "showHeader": true,
-      "sort": {
-        "col": 0,
-        "desc": true
+      "options": {
+        "showHeader": true
       },
-      "styles": [
-        {
-          "$$hashKey": "object:5161",
-          "alias": "Service",
-          "align": "center",
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "pattern": "service",
-          "type": "string"
-        },
-        {
-          "$$hashKey": "object:5749",
-          "alias": "Master Objects",
-          "align": "auto",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 0,
-          "mappingType": 1,
-          "pattern": "Value",
-          "thresholds": [],
-          "type": "number",
-          "unit": "none"
-        },
-        {
-          "$$hashKey": "object:5900",
-          "alias": "Cluster Batch",
-          "align": "center",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 2,
-          "mappingType": 1,
-          "pattern": "tags",
-          "thresholds": [],
-          "type": "string",
-          "unit": "short"
-        },
-        {
-          "$$hashKey": "object:5162",
-          "alias": "",
-          "align": "right",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "decimals": 2,
-          "pattern": "/.*/",
-          "thresholds": [],
-          "type": "hidden",
-          "unit": "short"
-        }
-      ],
+      "pluginVersion": "7.5.4",
       "targets": [
         {
+          "exemplar": true,
+          "expr": "aerospike_namespace_rack_id",
+          "format": "table",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{service}}-{{tags}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "cluster_name": true,
+              "instance": true,
+              "job": true,
+              "ns": true
+            },
+            "indexByName": {
+              "Value": 2,
+              "cluster_batch_tag": 1,
+              "service": 0
+            },
+            "renameByName": {}
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "cluster_batch_tag"
+              }
+            ]
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "service"
+              }
+            ]
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": "Aerospike Prometheus",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "right",
+            "filterable": false
+          },
+          "decimals": 0,
+          "displayName": "",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Master Objects"
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 2,
+        "x": 7,
+        "y": 0
+      },
+      "id": 27,
+      "options": {
+        "showHeader": true
+      },
+      "pluginVersion": "7.5.4",
+      "targets": [
+        {
+          "exemplar": true,
           "expr": "aerospike_namespace_master_objects ",
           "format": "table",
           "instant": true,
@@ -112,66 +258,115 @@
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "",
-      "transform": "table",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "cluster_batch_tag": true,
+              "cluster_name": true,
+              "instance": true,
+              "job": true,
+              "ns": true,
+              "service": false
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "service"
+              }
+            ]
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "service": true
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
+        }
+      ],
       "type": "table"
     },
     {
-      "columns": [],
       "datasource": "Aerospike Prometheus",
       "description": "",
-      "fontSize": "100%",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "right",
+            "filterable": false
+          },
+          "decimals": 0,
+          "displayName": "",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Replica Objects"
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          }
+        ]
+      },
       "gridPos": {
         "h": 7,
         "w": 2,
-        "x": 7,
+        "x": 9,
         "y": 0
       },
-      "id": 27,
-      "pageSize": null,
-      "showHeader": true,
-      "sort": {
-        "col": 0,
-        "desc": true
+      "id": 29,
+      "options": {
+        "showHeader": true
       },
-      "styles": [
-        {
-          "$$hashKey": "object:5749",
-          "alias": "Replica Objects",
-          "align": "auto",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 0,
-          "mappingType": 1,
-          "pattern": "Value",
-          "thresholds": [],
-          "type": "number",
-          "unit": "none"
-        },
-        {
-          "$$hashKey": "object:5162",
-          "alias": "",
-          "align": "right",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "decimals": 2,
-          "pattern": "/.*/",
-          "thresholds": [],
-          "type": "hidden",
-          "unit": "short"
-        }
-      ],
+      "pluginVersion": "7.5.4",
       "targets": [
         {
+          "exemplar": true,
           "expr": "aerospike_namespace_prole_objects ",
           "format": "table",
           "instant": true,
@@ -182,78 +377,46 @@
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "",
-      "transform": "table",
-      "type": "table"
-    },
-    {
-      "columns": [],
-      "datasource": "Aerospike Prometheus",
-      "description": "",
-      "fontSize": "100%",
-      "gridPos": {
-        "h": 7,
-        "w": 2,
-        "x": 9,
-        "y": 0
-      },
-      "id": 28,
-      "pageSize": null,
-      "showHeader": true,
-      "sort": {
-        "col": 0,
-        "desc": true
-      },
-      "styles": [
+      "transformations": [
         {
-          "$$hashKey": "object:5749",
-          "alias": "Cluster ID",
-          "align": "auto",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 0,
-          "mappingType": 1,
-          "pattern": "cluster_batch_tag",
-          "thresholds": [],
-          "type": "number",
-          "unit": "none"
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "cluster_batch_tag": true,
+              "cluster_name": true,
+              "instance": true,
+              "job": true,
+              "ns": true,
+              "service": false
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
         },
         {
-          "$$hashKey": "object:5162",
-          "alias": "",
-          "align": "right",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "decimals": 2,
-          "pattern": "/.*/",
-          "thresholds": [],
-          "type": "hidden",
-          "unit": "short"
-        }
-      ],
-      "targets": [
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "service"
+              }
+            ]
+          }
+        },
         {
-          "expr": "aerospike_node_up",
-          "format": "table",
-          "instant": true,
-          "interval": "",
-          "legendFormat": "{{service}}-{{tags}}",
-          "refId": "A"
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "service": true
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "",
-      "transform": "table",
       "type": "table"
     },
     {
@@ -268,6 +431,10 @@
       "datasource": "Aerospike Prometheus",
       "decimals": null,
       "description": "",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -350,6 +517,12 @@
       "dashes": false,
       "datasource": "Aerospike Prometheus",
       "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -374,9 +547,10 @@
       "links": [],
       "nullPointMode": "null",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
+      "pluginVersion": "7.5.4",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -452,6 +626,10 @@
       "datasource": "Aerospike Prometheus",
       "decimals": null,
       "description": "",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -538,6 +716,10 @@
       "datasource": "Aerospike Prometheus",
       "decimals": 0,
       "description": "",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -620,6 +802,12 @@
       "dashes": false,
       "datasource": "Aerospike Prometheus",
       "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -643,9 +831,10 @@
       "linewidth": 1,
       "nullPointMode": "null",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
+      "pluginVersion": "7.5.4",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -709,6 +898,12 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "Aerospike Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -732,9 +927,10 @@
       "linewidth": 1,
       "nullPointMode": "null",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
+      "pluginVersion": "7.5.4",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -799,6 +995,12 @@
       "dashes": false,
       "datasource": "Aerospike Prometheus",
       "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -822,9 +1024,10 @@
       "linewidth": 1,
       "nullPointMode": "null",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
+      "pluginVersion": "7.5.4",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -912,6 +1115,12 @@
       "dashes": false,
       "datasource": "Aerospike Prometheus",
       "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -935,9 +1144,10 @@
       "linewidth": 1,
       "nullPointMode": "null",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
+      "pluginVersion": "7.5.4",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -1015,7 +1225,7 @@
     }
   ],
   "refresh": "10s",
-  "schemaVersion": 22,
+  "schemaVersion": 27,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -1023,19 +1233,24 @@
       {
         "allValue": null,
         "current": {
-          "text": "aerospike_cluster",
-          "value": "aerospike_cluster"
+          "selected": false,
+          "text": "aerospike_ansible_demo_cluster",
+          "value": "aerospike_ansible_demo_cluster"
         },
         "datasource": "Aerospike Prometheus",
         "definition": "label_values(aerospike_node_stats_uptime{job=\"aerospike\"},cluster_name)",
+        "description": null,
+        "error": null,
         "hide": 0,
         "includeAll": false,
-        "index": -1,
         "label": "Cluster",
         "multi": false,
         "name": "cluster",
         "options": [],
-        "query": "label_values(aerospike_node_stats_uptime{job=\"aerospike\"},cluster_name)",
+        "query": {
+          "query": "label_values(aerospike_node_stats_uptime{job=\"aerospike\"},cluster_name)",
+          "refId": "Aerospike Prometheus-cluster-Variable-Query"
+        },
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -1049,21 +1264,28 @@
       {
         "allValue": null,
         "current": {
-          "text": "All",
+          "selected": true,
+          "text": [
+            "All"
+          ],
           "value": [
             "$__all"
           ]
         },
         "datasource": "Aerospike Prometheus",
         "definition": "label_values(aerospike_node_stats_uptime{job=\"aerospike\", cluster_name=~\"$cluster|$^\"},service)",
+        "description": null,
+        "error": null,
         "hide": 0,
         "includeAll": true,
-        "index": -1,
         "label": "Node",
         "multi": true,
         "name": "node",
         "options": [],
-        "query": "label_values(aerospike_node_stats_uptime{job=\"aerospike\", cluster_name=~\"$cluster|$^\"},service)",
+        "query": {
+          "query": "label_values(aerospike_node_stats_uptime{job=\"aerospike\", cluster_name=~\"$cluster|$^\"},service)",
+          "refId": "Aerospike Prometheus-node-Variable-Query"
+        },
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -1077,21 +1299,28 @@
       {
         "allValue": null,
         "current": {
-          "text": "All",
+          "selected": true,
+          "text": [
+            "All"
+          ],
           "value": [
             "$__all"
           ]
         },
         "datasource": "Aerospike Prometheus",
         "definition": "label_values(aerospike_namespace_objects{job=\"aerospike\", cluster_name=~\"$cluster|$^\", service=~\"$node|$^\" },ns)",
+        "description": null,
+        "error": null,
         "hide": 0,
         "includeAll": true,
-        "index": -1,
         "label": "Namespace",
         "multi": true,
         "name": "namespace",
         "options": [],
-        "query": "label_values(aerospike_namespace_objects{job=\"aerospike\", cluster_name=~\"$cluster|$^\", service=~\"$node|$^\" },ns)",
+        "query": {
+          "query": "label_values(aerospike_namespace_objects{job=\"aerospike\", cluster_name=~\"$cluster|$^\", service=~\"$node|$^\" },ns)",
+          "refId": "Aerospike Prometheus-namespace-Variable-Query"
+        },
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -1116,8 +1345,5 @@
   "timezone": "",
   "title": "Summit Talk 3",
   "uid": "8_1yczgGk",
-  "variables": {
-    "list": []
-  },
-  "version": 5
+  "version": 1
 }
