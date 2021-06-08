@@ -33,9 +33,8 @@
       set -e    
       PATH={{ os_config['go_path'] }}:$PATH
       eval $(go env)
+      export GO111MODULE=on
       go get github.com/aerospike/{{ exporter_name }}
-      cd $GOPATH/src/github.com/aerospike/{{ exporter_name }}
-      go build -o {{ exporter_name }} .
       mkdir -p /etc/{{ exporter_name }}
       curl https://raw.githubusercontent.com/aerospike/{{ exporter_name }}/master/ape.toml -o {{ exporter_config_path }}
       sed -i 's/^db_host.*$/db_host="localhost"/' {{ exporter_config_path }}
@@ -55,7 +54,7 @@
       then
         rm /usr/local/bin/{{exporter_name}}
       fi
-      ln -s $(pwd)/{{ exporter_name }} /usr/local/bin/{{ exporter_name }}
+      ln -s $GOPATH/bin/{{ exporter_name }} /usr/local/bin/{{ exporter_name }}
       systemctl daemon-reload
   when: hostvars[inventory_hostname].services[exporter_service_name] is not defined
 
