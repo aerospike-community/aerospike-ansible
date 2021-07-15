@@ -1,7 +1,13 @@
+- name: remove key pair by name
+  amazon.aws.ec2_key:
+    name: "{{ vpc_tag }}"
+    region: "{{ aws_region }}"
+    state: absent
+    
 - name: Create a new EC2 key
   ec2_key:
-      name: "{{ vpc_tag }}"
-      region: "{{ aws_region }}"
+    name: "{{ vpc_tag }}"
+    region: "{{ aws_region }}"
   register: ec2_key_result
 
 - name: "Save private key as {{ ansible_ssh_private_key_file }}"
