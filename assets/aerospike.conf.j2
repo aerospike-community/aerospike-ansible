@@ -67,9 +67,9 @@ network {
 }
 
 
-namespace test {
+namespace trades {
 	replication-factor {{ replication_factor }}
-	memory-size {{ ( ansible_facts.memtotal_mb * aerospike_mem_pct / 100 ) | int }}M
+	memory-size {{ ( ansible_facts.memtotal_mb * aerospike_mem_pct / 100  / 2 ) | int }}M
 	default-ttl 0d
 	nsup-period 600
 	{% if partition_tree_sprigs is defined %}partition-tree-sprigs {{ partition_tree_sprigs }}
@@ -94,3 +94,16 @@ namespace test {
 	}{% endif %} 
 }
 
+namespace aggregates {
+	replication-factor {{ replication_factor }}
+	memory-size {{ ( ansible_facts.memtotal_mb * aerospike_mem_pct / 100  / 2 ) | int }}M
+	default-ttl 0d 
+	nsup-period 120
+
+	{% if enterprise %}rack-id {% include "assets/sub-templates/reverse-formatted-subnet.j2" %}
+	{% endif %} 
+	{% if strong_consistency %}strong-consistency true
+	{% endif %}
+
+	storage-engine memory
+}

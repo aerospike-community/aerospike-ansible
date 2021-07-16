@@ -1,17 +1,23 @@
 # AWS - Region and AZ settings
 # ========================
-aws_region: us-east-1
+aws_region: eu-west-1
 
 # We specify cluster in terms of nodes per az
 cluster_az_list:
   - 'a'
   - 'b'
-  - 'd'
+  - 'c'
 
 # We specify client count in terms of nodes per az
 # Default to choosing the first in the cluster_az list
 client_az_list:
   - "{{ cluster_az_list[0] }}"
+
+# We specify se demo server count in terms of nodes per az
+# Default to choosing the first in the cluster_az list
+se_demo_az_list:
+  - "{{ cluster_az_list[0] }}"
+
 
 # AWS - IP details for generated sub-nets
 # ===================

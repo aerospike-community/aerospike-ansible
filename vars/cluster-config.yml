@@ -20,6 +20,10 @@ monitoring_instance_type: "{{ cluster_instance_type }}"
 spark_instance_type: "{{ cluster_instance_type }}"
 spark_worker_per_az_count: 1
 
+# SE demo trade server
+se_demo_server_instance_type: "{{ cluster_instance_type }}"
+se_demo_server_per_az_count: 1
+
 # Installation configuration
 # ===================================
 

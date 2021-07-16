@@ -6,6 +6,8 @@ client_tag: "{{ cluster_identifier }}_client"
 monitoring_tag: "{{ cluster_identifier }}_monitoring"
 # Tag for spark instances
 spark_tag: "{{ cluster_identifier }}_spark"
+# Tag for se-demo-trade-server
+se_demo_server_tag: "{{ cluster_identifier }}_se_demo_server"
 
 # Downloading 
 aerospike_download_suffix: "/artifact"

@@ -1,0 +1,110 @@
+---
+- name: Create an SE demo trade server instance
+  hosts: local
+  connection: local
+  gather_facts: no
+  vars:
+    instance_tag: "{{ se_demo_server_tag }}"
+    instance_count: "{{ se_demo_server_per_az_count }}"
+    instance_function: se_demo_server
+    az_list : "{{ se_demo_az_list }}"
+    instance_type: "{{ se_demo_server_instance_type }}"    
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars
+    
+  - name: "Setup {{ instance_function }} instance vars"
+    include_vars: modules/instance-setup-vars.yml
+
+  - name: "Setup {{ instance_function }} instances"
+    import_tasks: modules/instance-setup.yml
+
+  - name: Get cluster instance info
+    ec2_instance_info:
+      region: "{{ aws_region }}"
+      filters:
+        instance-state-name: [ "pending", "running" ]  
+        "tag:group": "{{ cluster_tag }}"   
+    register: cluster_info
+
+  - name: Cache cluster ip address
+    set_fact:
+      cluster_node_ip: "{{ cluster_info.instances[0].private_ip_address }}"
+      cacheable: yes
+
+  - meta: refresh_inventory
+
+- name: Set up benchmarking
+  hosts: "{{ se_demo_server_tag }}"
+  gather_facts: true
+  become: no
+  remote_user: "{{ os_config['remote_user'] }}"
+  vars_files:
+  - vars/cluster-config.yml
+  - vars/constants.yml
+  - vars/os-level-config.yml
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars
+
+  - block:
+    - name: If Ubuntu, update package cache
+      shell: |
+        set -e
+        sudo apt update
+
+    - name: If Ubuntu remove existing Java - there's a compatibility issue with 11 and our client at present
+      package:
+        name:
+          - "*openjdk*11*"
+        state: absent
+      become: yes
+    when: operating_system == ubuntu_os
+
+  - name: Some magic to help us install nodejs - needed on Amzn Linux
+    shell: |
+      curl --silent --location https://rpm.nodesource.com/setup_10.x | sudo bash -
+    become: yes
+    when: operating_system == amzn_linux_os
+
+  - name: Install Java/git/sysstat/maven/screen/nodejs
+    package:
+      name:
+        - "{{ os_config['java_package_name'] }}"
+        - git
+        - sysstat
+        - maven
+        - screen
+        - nodejs
+      state: present
+    become: yes
+
+  - name: Install SE demo server assets
+    git:
+      clone: "yes"
+      dest: "{{ ansible_env.HOME }}/se-simulator"
+      repo: "https://github.com/ken-tune/se-simulator.git"
+
+  - name: Retrieve cluster ip for use in benchmarking scripts
+    set_fact:
+      cluster_node_ip: "{{ hostvars['localhost'].cluster_node_ip }}"
+
+  - name: Build Trade Store Server
+    shell: |
+      set -e
+      export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which javadoc))))
+      cd {{ ansible_env.HOME }}/se-simulator/TradeStoreServer && mvn clean compile assembly:single  
+      export AEROSPIKE_HOST={{ cluster_node_ip }}
+      export CONTRACT_RECORD_SHARD_COUNT=1000
+      export TRADE_NAMESPACE=trades
+      export CONTRACT_SUMMARY_NAMESPACE=aggregates
+
+      screen -S TradeServer -dm bash -c 'java -jar target/TradeStoreServer-1.0-SNAPSHOT-jar-with-dependencies.jar'        
+      cd {{ ansible_env.HOME }}/se-simulator/TradeGenerator
+      npm install
+      screen -S TradeGenerator -dm bash -c 'node tradeGenerator.js'  
+
+
+
