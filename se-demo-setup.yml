@@ -100,10 +100,12 @@
       export CONTRACT_RECORD_SHARD_COUNT=1000
       export TRADE_NAMESPACE=trades
       export CONTRACT_SUMMARY_NAMESPACE=aggregates
+      export AERO_MAX_CONNS_PER_NODE=300
 
       screen -S TradeServer -dm bash -c 'java -jar target/TradeStoreServer-1.0-SNAPSHOT-jar-with-dependencies.jar'        
       cd {{ ansible_env.HOME }}/se-simulator/TradeGenerator
       npm install
+      export TRADES_PER_ITERATION=60000
       screen -S TradeGenerator -dm bash -c 'node tradeGenerator.js'  
 
 

@@ -5,8 +5,8 @@
 # All AWS assets will be identified using this prefix + appropriate suffix. See constants.yml for more details.
 cluster_identifier: aerospike
 
-cluster_instance_type: c5d.large
-cluster_hosts_per_az : 1
+cluster_instance_type: c5d.18xlarge
+cluster_hosts_per_az : 2
 partitions_per_device: 4
 
 # Aerospike client type and count
@@ -21,8 +21,8 @@ spark_instance_type: "{{ cluster_instance_type }}"
 spark_worker_per_az_count: 1
 
 # SE demo trade server
-se_demo_server_instance_type: "{{ cluster_instance_type }}"
-se_demo_server_per_az_count: 1
+se_demo_server_instance_type: "c5d.18xlarge"
+se_demo_server_per_az_count: 2
 
 # Installation configuration
 # ===================================
