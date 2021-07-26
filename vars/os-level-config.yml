@@ -1,0 +1,28 @@
+#   Use this to store variables which will vary depending on the OS used
+os_config: "{{ os_config_cache[operating_system] }}"
+
+os_config_cache: 
+
+  ubuntu20:
+    os_name: "Ubuntu 20.4"
+    java_package_name: openjdk-8-jdk
+    ami_owner: "099720109477"
+    ami_locator_string: "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223"
+    aerospike_distribution: "ubuntu20"
+    remote_user: "ubuntu"
+    go_version: "1.14"
+    go_package_name: "golang-{{ required_prometheus_go_version }}"
+    go_path: "/usr/lib/go-{{ required_prometheus_go_version }}/bin"
+
+  amznlinux2:
+    os_name: "Amazon Linux 2"    
+    java_package_name: java-1.8.0-openjdk
+    ami_owner: "amazon"
+    ami_locator_string: "amzn2-ami-hvm-2.0.*-x86_64-gp2"
+    aerospike_distribution: "el7"
+    remote_user: "ec2-user"
+    go_package_name: "go"
+    go_path: "/usr/lib/go/bin"
+
+required_prometheus_go_version: "1.14"
+required_prometheus_branch: "release-2.25"

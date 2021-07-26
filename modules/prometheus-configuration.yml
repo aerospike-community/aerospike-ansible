@@ -7,13 +7,13 @@
   set_fact:
     cluster_ip_addresses: "{{ cluster_ip_addresses }} + [ '{{ hostvars[item].private_ip_address }}' ]"
   with_items: 
-    "{{ groups.aerospike_cluster }}"
+    "{{ groups[cluster_tag] }}"
 
 - name: Get client ip addresses
   set_fact:
     client_ip_addresses: "{{ client_ip_addresses }} + [ '{{ hostvars[item].private_ip_address }}' ]"
   with_items: 
-    "{{ groups.aerospike_client }}"
+    "{{ groups[client_tag]}}"
 
 - name: Prometheus config file
   template:

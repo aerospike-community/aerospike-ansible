@@ -1,15 +1,21 @@
 ---
 - name: Quiesce + Stop Aeropsike
-  hosts: "{{ host_group }}"
+  hosts: "{{ host_group }}:&{{ cluster_tag }}"
   gather_facts: true
   become: yes
+  remote_user: "{{ os_config['remote_user'] }}"
+  vars_files:
+  - ../../vars/cluster-config.yml
+  - ../../vars/constants.yml
+  - ../../vars/os-level-config.yml  
   tasks:
   - name: Import configuration properties
     include_vars: 
-      dir: vars      
+      dir: ../../vars      
 
   - name: Quiesce and stop Aerospike service
     shell: |
+      set -e    
       asinfo -v 'quiesce:'
       asadm -e "asinfo -v 'recluster:'"
       sleep 10
@@ -23,22 +29,27 @@
   tasks:
   - name: Import configuration properties
     include_vars: 
-      dir: vars      
+      dir: ../../vars      
 
   - name: "Terminate {{ host_group }} instances"
     ec2:
       state: absent
       region: "{{ aws_region }}"
-      instance_ids: "{{ hostvars[item].ec2_id }}"
-    loop: "{{ groups[host_group] }}"
+      instance_ids: "{{ hostvars[item].instance_id }}"
+    loop: "{{ groups[host_group] | intersect(groups[cluster_tag]) }}"
 
 - name: Update Prometheus / Grafana 
-  hosts: "aerospike_monitoring"
+  hosts: "{{ monitoring_tag }}"
   gather_facts: true
   become: yes
+  remote_user: "{{ os_config['remote_user'] }}"
+  vars_files:
+  - ../../vars/cluster-config.yml
+  - ../../vars/constants.yml
+  - ../../vars/os-level-config.yml  
   tasks:
   - name: Import configuration properties
     include_vars: 
-      dir: vars      
+      dir: ../../vars      
 
-  - import_tasks: modules/prometheus-configuration.yml
+  - import_tasks: ../../modules/prometheus-configuration.yml

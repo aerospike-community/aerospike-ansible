@@ -22,8 +22,12 @@ subnet_cidr: 10.0.0.0/22 # IP range permitted for intra-cluster transport
 # ========
 # By default public ports (Grafana(4000),Prometheus(9090),Spark Web ports (8080,8081))
 # will be locked to your public ip. If you want to use a different address range uncomment the line below
-# public_port_access_cidr: "10.0.0.1/32" 
+# public_port_access_cidr: "10.0.0.1/32"
+
+# The ipify service is used to determine local IP - public ports are then locked to this.
+# It can be unreliable. If errors are seen in the 'get my ip address' task, set use_ipify to false and set public_port_access_cidr (above) to something that works for you.
+use_ipify: true
 
 # User used to access your instances using the quick access ssh scripts. Change if not using AWS
-remote_user: "ec2-user"
+remote_user: "{{ os_config['remote_user']}}"
 

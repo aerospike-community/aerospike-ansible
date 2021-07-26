@@ -1,6 +1,10 @@
 # Instance types, hosts per zone, partitions per device
 # You may wish to change these
 # =================================
+
+# All AWS assets will be identified using this prefix + appropriate suffix. See constants.yml for more details.
+cluster_identifier: aerospike
+
 cluster_instance_type: c5d.large
 cluster_hosts_per_az : 1
 partitions_per_device: 4
@@ -38,18 +42,14 @@ all_flash: false
 # Monitoring
 monitoring_enabled: true
 
-# Distribution
-aerospike_distribution: "el7" 
-# You can use el6 or 7 with Amazon 2 Linux AMI found below. 
-# If you want to use a debian or ubuntu or install, you will need to change the ami_locator_string below
-# !!! Newsflash - looks like el7 installs won't auto start as /var/log/aerospike doesn't get created, so stick to el6 while you see this message
-
 # Version number
 aerospike_version: "latest" 
 # Use full version number e.g. 4.8.0.8 'latest' is also recognized. 
 
-# AMI - will use the most recent Amazon AMI matching the name below
-ami_locator_string: "amzn2-ami-hvm-2.0.*-x86_64-gp2*"
+# Operating system - use ubuntu_os or amzn_linux_os inside the curly braces
+# This will determine the Aerospike distribution and ami used
+# Also remote user
+operating_system: "{{ amzn_linux_os }}"
 
 # Replication factor
 replication_factor: 2
@@ -57,11 +57,19 @@ replication_factor: 2
 # Proportion of total memory to assign to Aerospike - used in configuration template - see assets folder
 aerospike_mem_pct: 80
 
-# Default Rack ID
-rack_id : 101
-
 # Cluster ID - used by Prometheus exporter
-cluster_id: "CL-01"
+cluster_batch_tag: "CL01"
 
+# Do not change the configuration below - it is driven by the choice of operating system
+# ======================================================================================
+
+# Distribution
+aerospike_distribution: "{{ os_config['aerospike_distribution'] }}" 
+
+# AMI - will use the most recent AMI matching the name below
+ami_locator_string: "{{ os_config['ami_locator_string'] }}"
+
+# Default user for instances - varies depending on OS choice
+remote_user: "{{ os_config['remote_user'] }}"
 
 

@@ -83,7 +83,7 @@
       ],
       "targets": [
         {
-          "expr": "aerospike_node_info{job=\"aerospike\", cluster_name=~\"$cluster\", service=~\"$node|$^\"}",
+          "expr": "aerospike_node_up{job=\"aerospike\", cluster_name=~\"$cluster\", service=~\"$node|$^\"}",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -133,7 +133,7 @@
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
           "decimals": 2,
           "mappingType": 1,
-          "pattern": "build_version",
+          "pattern": "build",
           "thresholds": [],
           "type": "string",
           "unit": "short"
@@ -159,7 +159,7 @@
       ],
       "targets": [
         {
-          "expr": "aerospike_node_info{job=\"aerospike\", cluster_name=~\"$cluster\", service=~\"$node|$^\"}",
+          "expr": "aerospike_node_up{job=\"aerospike\", cluster_name=~\"$cluster\", service=~\"$node|$^\"}",
           "format": "table",
           "instant": true,
           "interval": "",

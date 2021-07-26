@@ -1,84 +1,108 @@
 - name: Upgrading Aerospike
-  hosts: "aerospike_cluster"
+  hosts: "{{ cluster_tag }}"
   serial: 1
   gather_facts: true
   become: yes
+  remote_user: "{{ os_config['remote_user'] }}"
+  vars_files:
+  - ../vars/cluster-config.yml
+  - ../vars/constants.yml
+  - ../vars/os-level-config.yml  
+  vars:
+    sleep_time_for_wait_statements: 5
+    client_tend_time: 60
   tasks:
   - name: Get service facts
     service_facts:
 
   - name: Import configuration properties
     include_vars: 
-      dir: vars      
+      dir: ../vars      
+
+  - name: Install new Aerospike version
+    block: 
+    - name: Check whether download exists
+      stat:
+       path: "{{ download_path }}"
+      register: stat_download_path
+
+    - name: Download Aerospike {{ 'Enterprise' if enterprise else 'Community' }}, version = {{ aerospike_version }}, distribution = {{ aerospike_distribution }} if not already downloaded
+      get_url:
+       url: "{{ download_url }}"
+       dest: "{{ download_path }}"
+      when: not stat_download_path.stat.exists 
+
+    - name: Unpack installer
+      unarchive:
+       remote_src: "yes"
+       src: "{{ download_path }}"
+       dest: "{{ download_file_dir }}"
+       list_files: true
+      register: result
+
+    - name: Get install directory
+      set_fact:
+       install_directory: "{{ result.files[0] }}"
+
+    - name: "Install Aerospike"
+      command:
+        chdir: "{{ download_file_dir }}/{{ install_directory }}"
+        cmd: "{{ download_file_dir }}/{{ install_directory }}/asinstall"
 
   - block:   
-    - name: Quiesce and stop Aerospike service
+    - name: Get Aerospike version
       shell: |
-        asinfo -v 'quiesce:'
+        asadm -e summary | grep "Server Version" | tr -d " "   | awk 'BEGIN{FS=":"}{print $2}'
+      register: asversion
+
+    - name: Show Aerospike version
+      debug:
+        msg: "Aerospike version : {{ asversion.stdout_lines[0] }}"
+
+    - name: "{% if enterprise %}Quiesce{% else %}No quiesce - expect transient client errors{% endif %}, wait for proxying to finish, restart, wait for cluster stable"
+      shell: |
+        set -e
+        # Record current migrate-max-num-incoming value
+        MIG_MAX=$(asinfo -v 'get-config:context=service' -l | grep migrate-max-num-incoming | awk 'BEGIN{FS="="}{print $2}')      
+        # Temporarily stop migrations
+        #asadm -e "asinfo -v 'set-config:context=service;migrate-max-num-incoming=0'"
+        {% if enterprise %}
+        # Quiesce and recluster if Enterprise
+        asinfo -v 'quiesce:' 
         asadm -e "asinfo -v 'recluster:'"
-        sleep 10
-        service aerospike stop
+        {% endif %}
+        # Wait for all clients to re-tend (get latest partition table )
+        sleep {{ client_tend_time }}        
+        # Wait for proxying to reduce to zero
+        while [[ ! ($(asinfo -v 'statistics' -l | grep proxy_in_progress | awk 'BEGIN{FS="="}{print $2}') == 0) ]]
+        do
+          sleep {{ sleep_time_for_wait_statements }}
+        done
+        # Restart service
+        service aerospike restart
+        # Wait for server to come up
+        while [ -z $(pgrep asd) ]
+        do 
+          sleep {{ sleep_time_for_wait_statements }}
+        done        
+        # Restore migrate-max-num-incoming
+        #asadm -e "asinfo -v 'set-config:context=service;migrate-max-num-incoming=$MIG_MAX'"        
+        # Wait for cluster-stable
+        while [[ $(asinfo -v 'cluster-stable:') =~ ^ERROR ]]
+        do 
+          sleep {{ sleep_time_for_wait_statements }}
+        done
+      args:
+        executable: /bin/bash        
+
+    - name: Get Aerospike version
+      shell: |
+        asadm -e summary | grep "Server Version" | tr -d " "   | awk 'BEGIN{FS=":"}{print $2}'
+      register: asversion
+
+    - name: Installation complete message
+      debug: 
+        msg: "Aerospike install complete for {{ inventory_hostname }} - running {{ asversion.stdout_lines[0] }}"
 
     when: hostvars[inventory_hostname].services[aerospike_service_name] is defined
 
-  - debug: 
-      msg: "Aerospike uninstall complete"
-
-  - block:
-    - name: "stat {{ feature_key_path }}"
-      local_action: "stat path={{ feature_key_path }}"
-      become: no
-      register: feature_key_meta
-
-    - name: "Check feature key {{ feature_key_path }} exists"
-      fail:
-        msg: "Specified feature key {{ feature_key_path }} not found"
-      when: not feature_key_meta.stat.exists    
-    when: enterprise 
-
-  - name: Check whether download exists
-    stat:
-     path: "{{ download_path }}"
-    register: stat_download_path
-
-  - name: Download Aerospike {{ 'Enterprise' if enterprise else 'Community' }}, version = {{ aerospike_version }}, distribution = {{ aerospike_distribution }} if not already downloaded
-    get_url:
-     url: "{{ download_url }}"
-     dest: "{{ download_path }}"
-    when: not stat_download_path.stat.exists 
-
-  - name: Unpack installer
-    unarchive:
-     remote_src: "yes"
-     src: "{{ download_path }}"
-     dest: "{{ download_file_dir }}"
-     list_files: true
-    register: result
-
-  - name: Get install directory
-    set_fact:
-     install_directory: "{{ result.files[0] }}"
-
-  - name: "Install Aerospike"
-    command:
-      chdir: "{{ download_file_dir }}/{{ install_directory }}"
-      cmd: "{{ download_file_dir }}/{{ install_directory }}/asinstall"
-
-  - name: aerospike.conf
-    import_tasks: modules/aerospike-configuration-tasks.yml
-
-  - name: Start Aerospike service
-    shell: 
-      cmd: "service aerospike start"
-
-  - name: Wait for cluster to become stable
-    shell: |
-      while [[ $(asinfo -v 'cluster-stable:') =~ ^ERROR ]]
-      do 
-        sleep 5
-      done
-      sleep 5
-
-  - name: Installation complete message
-    debug: 
-      msg: "Aerospike install complete"

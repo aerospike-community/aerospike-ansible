@@ -33,23 +33,35 @@
   - meta: refresh_inventory
 
 - name: Set up Spark
-  hosts: "aerospike_spark"
+  hosts: "{{ spark_tag }}"
   gather_facts: false
   become: no
+  remote_user: "{{ os_config['remote_user'] }}"
+  vars_files:
+  - vars/cluster-config.yml
+  - vars/constants.yml
+  - vars/os-level-config.yml  
   tasks:
   - name: Import configuration properties
     include_vars: 
       dir: vars
 
+  - block:
+    - name: If Ubuntu, update package cache
+      shell: |
+          sudo apt update
+      when: operating_system == ubuntu_os
+
   - name: Install Java
     package:
       name:
-        - java-1.8.0-openjdk
-      state: latest
+        - "{{ os_config['java_package_name'] }}"
+      state: present
     become: yes
 
   - name: Install Scala
     shell: |
+      set -e    
       if [ -z $(which scala 2>/dev/null ) ]
       then
         cd /tmp
@@ -66,6 +78,7 @@
 
   - name: Install Spark
     shell: |
+      set -e    
       mkdir -p /etc/aerospike    
       if [ ! -d /spark ]
       then
@@ -79,6 +92,7 @@
 
   - name: Install Aerospike Spark Connect
     shell: |
+      set -e    
       if [ ! -f /spark/jars/aerospike-spark-assembly-{{ aerospike_spark_connect_version }}.jar ]
       then
         cd /tmp
@@ -97,19 +111,30 @@
     become: yes
 
 - name: Start Master
-  hosts: "aerospike_spark[0]"
+  hosts: "{{ spark_tag }}[0]"
   gather_facts: false
   become: no
+  remote_user: "{{ os_config['remote_user'] }}"
+  vars_files:
+  - vars/cluster-config.yml
+  - vars/constants.yml
+  - vars/os-level-config.yml  
   tasks:
   - name: Start Master
     shell: |
+      set -e
       /spark/sbin/stop-master.sh
       /spark/sbin/start-master.sh
 
 - name: Start Spark worker processes
-  hosts: "aerospike_spark"
+  hosts: "{{ spark_tag }}"
   gather_facts: false
   become: no
+  remote_user: "{{ os_config['remote_user'] }}"
+  vars_files:
+  - vars/cluster-config.yml
+  - vars/constants.yml
+  - vars/os-level-config.yml  
   tasks:
   - name: Import configuration properties
     include_vars: 
@@ -121,12 +146,13 @@
       region: "{{ aws_region }}"
       filters:
         instance-state-name: [ "pending", "running" ]  
-        ip-address: "{{ groups.aerospike_spark[0] }}"
+        dns-name: "{{ groups.aerospike_spark[0] }}"
         "tag:group": "{{ spark_tag }}"   
     register: spark_info
 
   - name: Start agents
     shell: |
+      set -e    
       /spark/sbin/stop-slave.sh 
       /spark/sbin/start-slave.sh spark://{{ spark_info.instances[0].private_ip_address }}:{{ spark_master_port }}
 
@@ -144,7 +170,7 @@
       region: "{{ aws_region }}"
       filters:
         instance-state-name: [ "pending", "running" ]  
-        ip-address: "{{ groups.aerospike_spark[0] }}"
+        dns-name: "{{ groups.aerospike_spark[0] }}"
         "tag:group": "{{ spark_tag }}"   
     register: spark_info
 

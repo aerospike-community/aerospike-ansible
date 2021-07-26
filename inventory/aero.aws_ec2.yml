@@ -2,3 +2,7 @@ plugin: aws_ec2
 keyed_groups:
   - key: tags.group
     separator: ''
+  - key: tags.cluster_batch_tag
+    separator: ''
+  - key: placement.availability_zone
+    separator: ''

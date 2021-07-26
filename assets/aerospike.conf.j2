@@ -31,7 +31,7 @@ network {
 	{% endif %}
 
 	service {
-		address eth0
+		address any
 		
 		{% if tls_enabled %}tls-port {{ tls_service_port }}
 		tls-address any
@@ -56,7 +56,7 @@ network {
 	}
 
 	fabric {
-		address eth0
+		address any
 		{% if tls_enabled %}tls-port {{ tls_fabric_port }}
 		tls-name {{ tls_name }}{% else %}port {{ fabric_port }}{% endif %}		
 	}

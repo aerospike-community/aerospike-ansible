@@ -1,12 +1,16 @@
 Ansible
 -------
 
-Separate repo for ACT?
-Put demo stuff in separate branch. Include scripts
 Change command prompt so we see function on line ( quick ssh )
 Don't re-partition
-Secure Grafana with a password
-Allow for multiple clusters using templating of inventory/hosts
+Regression testing?
+Review shell commands for use of set -e
+Check quiesce is commented out for community
+
+Bug
+===
+
+Monitoring playbook fails if no client hosts
 
 Cosmetic
 ========
@@ -17,8 +21,6 @@ Nice to have
 ============
 
 Refactor node-id generation to only do this if we're working with ip addresses
-Dockerize it to simplify setup?
-
 
 When Finishing
 ===============
@@ -50,6 +52,14 @@ Enhance README - IAM / virtualenv
 Bare install i.e. not from your Mac
 Update README to include details of client
 Lock security group to your own ip
+Dockerize it to simplify setup?
+Secure Grafana with a password - not necessary - did ip locking
+For teardown, kill all nodes together - should be able to do this now.
+ACT Setup
+Ability to ignore ipify
+Allow for multiple clusters using templating of inventory/hosts - almost there - search for hosts: where {{}} is not being used
+Get rid of remote_user warning
+
 
 Output checked
 ==============

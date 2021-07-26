@@ -1,0 +1,119 @@
+---
+- name: "Quiesce + wait for migrations to finish for {{ cluster_batch_tag}} hosts in {{ qualified_az_name }} "
+  hosts: "{{ cluster_batch_tag }}:&{{ qualified_az_name }}"
+  gather_facts: true
+  become: yes
+  remote_user: "{{ os_config['remote_user'] }}"
+  vars_files:
+  - ../vars/aws-config.yml
+  - ../vars/cluster-config.yml
+  - ../vars/constants.yml
+  - ../vars/os-level-config.yml    
+  vars:
+    qualified_az_name : "{{ aws_region | replace ('-','_') }}{{ az }}"
+    sleep_time_for_wait_statements: 5  
+    client_tend_time: 60
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: ../vars      
+
+  - name: Quiesce and wait for migrations to finish
+    shell: |
+      set -e    
+      asinfo -v 'quiesce:'
+      asadm -e "asinfo -v 'recluster:'"
+
+      # Wait for migrations to complete
+      while [[ $(asinfo -v 'cluster-stable:') =~ ^ERROR ]]
+      do 
+        sleep {{ sleep_time_for_wait_statements }}
+      done
+
+      # Wait for all clients to re-tend (get latest partition table )
+      sleep {{ client_tend_time }}     
+         
+      # Wait for proxying to reduce to zero
+      while [[ ! ($(asinfo -v 'statistics' -l | grep proxy_in_progress | awk 'BEGIN{FS="="}{print $2}') == 0) ]]
+      do
+        sleep {{ sleep_time_for_wait_statements }}
+      done
+    args:
+      executable: /bin/bash        
+
+
+- name: "Serially remove hosts from roster, stop and terminate for {{ cluster_batch_tag}} hosts in {{ qualified_az_name }}"
+  hosts: "{{ cluster_batch_tag }}:&{{ qualified_az_name }}"
+  gather_facts: true
+  become: yes
+  serial: 1
+  remote_user: "{{ os_config['remote_user'] }}"
+  vars_files:
+  - ../vars/aws-config.yml
+  - ../vars/cluster-config.yml
+  - ../vars/constants.yml
+  - ../vars/os-level-config.yml        
+  vars:
+    qualified_az_name : "{{ aws_region | replace ('-','_') }}{{ az }}"    
+    # Requires user to override
+    sc: true
+  tasks:
+  - block:
+    - name: Remove host from roster
+      shell: |
+        set -e
+        # Get the form of the asinfo command that we need
+        ASINFO="asinfo {% if tls_enabled %}--tls-enable --tls-name={{ cluster_name }} --tls-cafile=/etc/aerospike/certs/ca.crt -p {{ tls_service_port }} {% endif %}"
+
+        # Get current roster, extract namespace and observed nodes
+        ROSTER_STRING=$($ASINFO -v 'roster:')
+        NS=$(echo $ROSTER_STRING | sed 's/^ns=\([^:]*\).*$/\1/')
+        nodesString=$(echo $ROSTER_STRING | sed 's/^.*\:roster\=\([^:]*\):.*$/\1/')
+
+        # Get current node & remove it from the list of observed nodes
+        CURRENT_NODE=$($ASINFO -v 'node')
+        NEW_ROSTER=$(echo $nodesString | sed "s/$CURRENT_NODE[^,]*[,]*//" | sed 's/,$//')
+
+        # Set roster
+        asInfoCommand="\"roster-set:namespace=${NS}\;nodes=${NEW_ROSTER}\""
+        $ASINFO -v "$asInfoCommand"
+
+        echo $asInfoCommand
+        if [ $? -eq 0 ]
+        then
+          echo "Roster set"
+        else
+          echo "Error occurred"
+          exit 1
+        fi
+
+        asadm {% if tls_enabled %}--tls-enable --tls-name={{ cluster_name }} --tls-cafile=/etc/aerospike/certs/ca.crt -p {{ tls_service_port }} {% endif %} -e 'asinfo -v "recluster:"'
+        $ASINFO -v 'roster:'
+        echo "Roster set and reclustered"
+    when: sc
+
+  - name: Stop Aerospike service
+    shell: 
+      cmd: "service aerospike stop"
+
+
+- name: "Terminate specific instances for specified az"
+  hosts: local
+  connection: local
+  gather_facts: false
+  become: no
+  vars:
+    qualified_az_name : "{{ aws_region }}{{ az }}"      
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: ../vars      
+
+  - name: "Terminate {{ cluster_batch_tag }} instances on {{ qualified_az_name }}"
+    ec2:
+      state: absent
+      region: "{{ aws_region }}"
+      instance_ids: "{{ hostvars[item].instance_id }}"
+    loop: "{{ groups[cluster_batch_tag] }}"
+    when: hostvars[item].placement.availability_zone == qualified_az_name
+

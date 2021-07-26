@@ -36,23 +36,42 @@
   - meta: refresh_inventory
 
 - name: Set up benchmarking
-  hosts: "aerospike_client"
+  hosts: "{{ client_tag }}"
   gather_facts: true
   become: no
+  remote_user: "{{ os_config['remote_user'] }}"
+  vars_files:
+  - vars/cluster-config.yml
+  - vars/constants.yml
+  - vars/os-level-config.yml
   tasks:
   - name: Import configuration properties
     include_vars: 
       dir: vars
 
+  - block:
+    - name: If Ubuntu, update package cache
+      shell: |
+        set -e
+        sudo apt update
+
+    - name: If Ubuntu remove existing Java - there's a compatibility issue with 11 and our client at present
+      package:
+        name:
+          - "*openjdk*11*"
+        state: absent
+      become: yes
+    when: operating_system == ubuntu_os
+
   - name: Install Java/git/sysstat/maven/screen
     package:
       name:
-        - java-1.8.0-openjdk
+        - "{{ os_config['java_package_name'] }}"
         - git
         - sysstat
         - maven
         - screen
-      state: latest
+      state: present
     become: yes
 
   - name: Install Aerospike Java Client
@@ -66,9 +85,11 @@
       cluster_node_ip: "{{ hostvars['localhost'].cluster_node_ip }}"
 
   - name: Build Aerospike Java Client
-    command:
-      chdir: "{{ ansible_env.HOME }}/aerospike-client-java"
-      cmd: "bash {{ ansible_env.HOME }}/aerospike-client-java/build_all"
+    shell: |
+      set -e
+      cd {{ ansible_env.HOME }}/aerospike-client-java
+      export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which javadoc))))
+      {{ ansible_env.HOME }}/aerospike-client-java/build_all
 
   - name: "Copy benchmarking config to client"
     template:
@@ -106,6 +127,7 @@
 
     - name: Import CA cert to key store
       shell: |
+        set -e
         JAVA_HOME=$(dirname $(dirname $(dirname $(readlink -f $(which java)))))
         # Remove without error if already exists
         set +e

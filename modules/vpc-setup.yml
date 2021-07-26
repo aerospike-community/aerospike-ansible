@@ -4,8 +4,8 @@
       region: "{{ aws_region }}"
   register: ec2_key_result
 
-- name: "Save private key as {{ key_file_name }}"
-  copy: content="{{ ec2_key_result.key.private_key }}" dest="{{ key_file_name }}" mode=0400
+- name: "Save private key as {{ ansible_ssh_private_key_file }}"
+  copy: content="{{ ec2_key_result.key.private_key }}" dest="{{ ansible_ssh_private_key_file }}" mode=0400
   when: ec2_key_result.changed
 
 - name: Create VPC
@@ -70,6 +70,15 @@
 - name: Get my ip address
   ipify_facts:
   register: public_ip
+  when: use_ipify 
+
+- name: "Locked IP check"
+  block:
+  - debug:
+      msg: "If use_ipify is disabled, public_port_access_cidr must be set - THIS PLAYBOOK WILL NOW EXIT"
+
+  - meta: end_play
+  when: not use_ipify and not public_port_access_cidr is defined
 
 - name: Create Security Group ( lock public ports to my ip )
   ec2_group:

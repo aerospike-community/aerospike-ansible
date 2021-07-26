@@ -12,12 +12,13 @@
   register: vpc_subnets
 
 - block:
-  - name: Get Amazon Linux 2 AMI  x86_64 HVM gp2 AMI info
+  - name: "Get {{ os_config['os_name'] }} AMI"
     ec2_ami_info:
+
       region: "{{ aws_region }}"     
+      owners: "{{ os_config['ami_owner'] }}"        
       filters:
-        name: "{{ ami_locator_string }}"
-        owner-alias: "amazon"        
+        name: "{{ os_config['ami_locator_string'] }}"
     register: ami_list
 
   - name: Get the latest AMI
@@ -39,9 +40,10 @@
     group_id: "{{ security_group.group_id }}"
     vpc_subnet_id: "{{ subnet.id }}"
     instance_tags:
+       uber-group: "{{ cluster_identifier }}"
        group: "{{ instance_tag }}"
        group-plus-az: "{{ group_plus_az_tag_value }}"
-       cluster_id : "{{ cluster_id }}"         
+       cluster_batch_tag : "{{ cluster_batch_tag }}"         
     wait: yes
   vars:
     group_plus_az_tag_value : "{{ instance_tag }} : {{ subnet.availability_zone }}"    

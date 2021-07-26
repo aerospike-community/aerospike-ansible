@@ -1,7 +1,12 @@
 - name: "Copy Aerospike configuration to servers and restart"
-  hosts: "aerospike_cluster"
+  hosts: "{{ cluster_tag }}"
   gather_facts: true
   become: yes
+  remote_user: "{{ os_config['remote_user'] }}"
+  vars_files:
+  - vars/cluster-config.yml
+  - vars/constants.yml
+  - vars/os-level-config.yml  
   tasks:
   - name: Import configuration properties
     include_vars: 

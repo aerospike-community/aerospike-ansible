@@ -1,0 +1,127 @@
+---
+- name: Create an ACT testing instance
+  hosts: local
+  connection: local
+  gather_facts: no
+  vars:
+    instance_tag: "{{ act_tag }}"
+    instance_count: 1
+    instance_function: act
+    instance_type: "{{ act_instance_type }}"    
+    vpc_tag: "{{ cluster_tag }}"
+    az_list : "{{ act_az_list }}"        
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars
+
+  - name: "Setup VPC"
+    include_tasks: modules/vpc-setup.yml
+
+  - name: "Setup {{ instance_function }} instance vars"
+    include_vars: modules/instance-setup-vars.yml
+
+  - name: "Setup {{ instance_function }} instances"
+    import_tasks: modules/instance-setup.yml
+
+- name: Set up ACT
+  hosts: "{{ act_tag }}"
+  gather_facts: true
+  become: no
+  remote_user: "{{ os_config['remote_user'] }}"
+  vars_files:
+  - vars/cluster-config.yml
+  - vars/constants.yml
+  - vars/os-level-config.yml    
+  - vars/act.yml  
+  vars:
+    act_util_dir: act-util
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars
+
+  - block:
+    - name: If Ubuntu, update package cache
+      shell: |
+        sudo apt update
+
+    - name: If Ubuntu remove existing Java - there's a compatibility issue with 11 and our client at present
+      package:
+        name:
+          - "*openjdk*11*"
+        state: absent
+      become: yes
+    when: operating_system == ubuntu_os
+
+  - name: Install Java/git/gcc/make/sysstat
+    package:
+      name:
+        - "{{ os_config['java_package_name'] }}"
+        - git
+        - gcc
+        - make
+        - sysstat
+      state: latest
+    become: yes
+
+  - name: Install FIO
+    git:
+      clone: "yes"
+      dest: "{{ ansible_env.HOME }}/fio"
+      repo: "https://github.com/axboe/fio.git"
+
+  - name: Install ACT
+    git:
+      clone: "yes"
+      dest: "{{ ansible_env.HOME }}/act"
+      repo: "https://github.com/aerospike/act.git"
+
+  - name: Build ACT
+    command:
+      chdir: "{{ ansible_env.HOME }}/act"
+      cmd: "make"
+
+  - name: Partition disks
+    import_tasks: modules/partition-tasks.yml
+
+  - name: Make sure local {{ act_util_dir }} directory exists
+    file:
+      path: "{{ ansible_env.HOME }}/{{ act_util_dir }}"
+      state: directory 
+
+  - name: "Create ACT template"
+    template:
+      src: "assets/act/act_storage.template.conf.j2"
+      dest: "{{ ansible_env.HOME }}/{{ act_util_dir }}/act_storage.template.conf"
+      mode: 0644
+
+  - name: "Copy additional ACT assets I"
+    copy:
+      src: "assets/act/{{ item }}"
+      dest: "{{ ansible_env.HOME }}/{{ act_util_dir }}/{{ item }}"
+      mode: 0755
+    with_items:
+    - "generate-multiple-act-config.pl"
+    - "run-multiple-act.sh"
+    - "terminate-multi-act.sh"
+    - "multiple-act-common.sh"
+    - "show-run.sh"
+    - "tail-iostat.sh"
+    - "latency-show.sh"
+
+  - name: "Copy additional ACT assets II"
+    copy:
+      src: "assets/act/{{ item }}"
+      dest: "{{ ansible_env.HOME }}/{{ act_util_dir }}/{{ item }}"
+      mode: 0644
+    with_items:
+    - "multiple-act.conf"
+
+  - name: "Add current directory to PATH I"
+    shell: "echo 'export PATH=$PATH:.' >> {{ ansible_env.HOME }}/.bash_profile"
+
+
+
+
+

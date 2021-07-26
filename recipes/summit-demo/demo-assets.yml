@@ -1,22 +1,35 @@
 - name: sandbox
-  hosts: "aerospike_client"
+  hosts: "{{ client_tag }}"
   gather_facts: yes 
   become: no
+  remote_user: "{{ os_config['remote_user'] }}"
+  vars_files:
+  - ../../vars/cluster-config.yml
+  - ../../vars/constants.yml
+  - ../../vars/os-level-config.yml    
   tasks:
   - name: Import configuration properties
     include_vars: 
       dir: ../../vars
     
-  - name: Some magic to help us install nodejs
+  - name: Some magic to help us install nodejs - needed on Amzn Linux
     shell: |
       curl --silent --location https://rpm.nodesource.com/setup_10.x | sudo bash -
     become: yes
+    when: operating_system == amzn_linux_os
 
   - name: Install nodejs
     package:
       name:
         - nodejs
     become: yes
+
+  - name: Install npm (separate install for Ubuntu)
+    package:
+      name:
+        - npm
+    become: yes
+    when: operating_system == ubuntu_os
 
   - name: Copy metric service assets
     copy:
@@ -26,9 +39,14 @@
       directory_mode: 0755
 
 - name: Set up Prometheus / Grafana 
-  hosts: "aerospike_monitoring"
+  hosts: "{{ monitoring_tag }}"
   gather_facts: true
   become: yes
+  remote_user: "{{ os_config['remote_user'] }}"
+  vars_files:
+  - ../../vars/cluster-config.yml
+  - ../../vars/constants.yml
+  - ../../vars/os-level-config.yml      
   tasks:
   - name: Add Summit Demo dashboards
     copy:

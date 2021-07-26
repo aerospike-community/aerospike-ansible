@@ -2,7 +2,7 @@
   set_fact:
     cluster_ip_addresses: "{{ cluster_ip_addresses }} + [ '{{ hostvars[item].private_ip_address }}' ]"
   with_items: 
-    "{{ groups.aerospike_cluster }}"
+    "{{ groups[cluster_tag] }}"
   vars:
       cluster_ip_addresses: []
   
@@ -38,6 +38,7 @@
 
   - name: "Format and mount all flash device"
     shell: |
+      set -e
       all_flash_array=($(ls /dev/nvme*p* | grep -v nvme0 | grep p1))
       for i in ${!all_flash_array[@]}
       do
@@ -51,7 +52,9 @@
           mount ${all_flash_array[$i]} /nvme_all_flash_${i}
         fi
       done
-
+    args:
+      executable: /bin/bash      
+      
   - name: "Get all flash device mount points"
     shell:
       cmd: "cat /proc/mounts | grep all_flash | awk '{print $2}'"
