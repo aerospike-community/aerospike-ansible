@@ -44,7 +44,7 @@
   - block:
     - name: Some magic to help us install nodejs
       shell: |
-        curl --silent --location https://rpm.nodesource.com/setup_10.x | sudo bash -
+        curl --silent --location https://rpm.nodesource.com/setup_14.x | sudo bash -
         curl --silent --location https://dl.yarnpkg.com/rpm/yarn.repo | sudo tee /etc/yum.repos.d/yarn.repo
         rpm --import https://dl.yarnpkg.com/rpm/pubkey.gpg    
         cat <<EOF | sudo tee /etc/yum.repos.d/grafana.repo
@@ -91,15 +91,11 @@
 
     - name: Install and start Prometheus
       shell: |
-        eval $(go env)
-        echo $GOPATH > /tmp/goroot.txt
-        mkdir -p $GOPATH/src/github.com/prometheus
-        cd $GOPATH/src/github.com/prometheus
-        git clone https://github.com/prometheus/prometheus.git
-        cd prometheus
-        make build
+        wget https://github.com/prometheus/prometheus/releases/download/v2.14.0/prometheus-2.14.0.linux-amd64.tar.gz -P /tmp
+        cd /tmp
+        tar -zxpvf prometheus-2.14.0.linux-amd64.tar.gz
+        cp prometheus-2.14.0.linux-amd64/prometheus /usr/local/bin
         mkdir /var/lib/prometheus
-        ln -s $(pwd)/prometheus /usr/local/bin/prometheus
         grafana-cli plugins install camptocamp-prometheus-alertmanager-datasource
         sysctl vm.max_map_count=131072
         systemctl daemon-reload
