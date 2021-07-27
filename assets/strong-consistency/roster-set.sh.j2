@@ -29,7 +29,7 @@ else
 	exit 1
 fi
 
-asadm {% if tls_enabled %}--tls-enable --tls-name={{ cluster_name }} --tls-cafile=/etc/aerospike/certs/ca.crt -p {{ tls_service_port }} {% endif %} -e 'asinfo -v "recluster:"'
+asadm {% if tls_enabled %}--tls-enable --tls-name={{ cluster_name }} --tls-cafile=/etc/aerospike/certs/ca.crt -p {{ tls_service_port }} {% endif %} -e 'enable ; asinfo -v "recluster:"'
 $ASINFO -v 'roster:'
 echo "Roster set and reclustered"
 
