@@ -1,0 +1,24 @@
+#!/bin/bash
+
+##############################################################
+#                                                            #
+# Ensure zoo.cfg has correct config for clustering           #
+#                                                            #
+# Addressing this problem at time of writing 2021-11-05      #
+#                                                            #
+# https://github.com/sleighzy/ansible-zookeeper/issues/26.   #
+#                                                            #
+##############################################################
+
+ZOOKEEPER_CONFIG_FILE=/usr/share/zookeeper/bin/../conf/zoo.cfg
+ZOOKEEPER_ID_FILE=/var/lib/zookeeper/myid
+
+{% for item in instance_info.instances %}
+sed -i 's/server\.[[:digit:]]\+={{item.private_dns_name}}:2888:3888/server.{{ loop.index }}={{item.private_dns_name}}:2888:3888/' $ZOOKEEPER_CONFIG_FILE
+if [ $(hostname) == {{ item.private_dns_name }} ]
+then
+	echo -n {{ loop.index }} > $ZOOKEEPER_ID_FILE
+fi
+{% endfor %}
+
+sudo service zookeeper restart

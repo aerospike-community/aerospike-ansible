@@ -1,0 +1,18 @@
+service:
+  port: 8080
+ 
+producer-props:
+  bootstrap.servers:
+  {% for item in kafka_info.instances %}
+  - {{item.private_ip_address }}:9092
+  {% endfor %}
+ 
+logging:
+  file: /var/log/aerospike-kafka-outbound/aerospike-kafka-outbound.log
+ 
+format:
+  mode: json
+ 
+routing:
+  mode: static
+  destination: {{ default_kafka_topic }}

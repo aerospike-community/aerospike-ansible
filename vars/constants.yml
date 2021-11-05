@@ -6,6 +6,8 @@ client_tag: "{{ cluster_identifier }}_client"
 monitoring_tag: "{{ cluster_identifier }}_monitoring"
 # Tag for spark instances
 spark_tag: "{{ cluster_identifier }}_spark"
+# Tag for Kafka instances
+kafka_tag: "{{ cluster_identifier }}_kafka"
 
 # Downloading 
 aerospike_download_suffix: "/artifact"
@@ -64,6 +66,11 @@ grafana_port: 4000
 spark_master_port: 7077
 spark_master_web_port: 8080
 spark_worker_web_port: 8081
+
+kafka_port: 9092
+zookeeper_clustering_port: 2888
+zookeeper_election_port: 3888
+zookeeper_client_port: 2181
 
 # Operating system identifiers
 ubuntu_os: "ubuntu20"

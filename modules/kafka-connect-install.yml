@@ -1,0 +1,55 @@
+- name: Get service facts
+  service_facts:
+
+- block:
+  - name: If Ubuntu, update package cache
+    shell: |
+      sudo apt update
+  when: operating_system == ubuntu_os
+
+- name: Install Java
+  package:
+    name:
+      - "{{ os_config['java_package_name'] }}"
+    state: present
+  become: yes
+
+- name: Get Kafka hosts
+  delegate_to: localhost
+  ec2_instance_info:
+    region: "{{ aws_region }}"
+    filters:
+      instance-state-name: [ "pending", "running" ]  
+      "tag:group": "{{ kafka_tag }}"   
+  register: kafka_info
+  become: no
+      
+- name: Install Kafka Connect
+  vars:
+    kafka_connect_rpm: "{{ kafka_connect_product_name }}-{{ kafka_connect_product_version }}.rpm"
+
+  shell: |
+    cd /tmp
+    wget https://www.aerospike.com/enterprise/download/connectors/{{ kafka_connect_product_name }}/{{ kafka_connect_product_version }}/artifact/rpm -O /tmp/{{ kafka_connect_rpm}} 
+    X=$(yum list {{ kafka_connect_product_name }}) 
+    if [[ $? == 1 ]]
+    then
+      rpm -i {{ kafka_connect_rpm }} 
+    fi
+
+- name: Copy Kafka Connect config
+  template:
+    src: "assets/kafka-connect-config.yml.j2"
+    dest: /etc/aerospike-kafka-outbound/aerospike-kafka-outbound.yml
+    owner: root
+    group: root
+    mode: '0644'   
+    trim_blocks: yes
+    lstrip_blocks: yes     
+  become: yes
+
+- name: Start Aerospike Kafka Outbound service
+  vars:
+  shell: |
+    sudo service aerospike-kafka-outbound start
+

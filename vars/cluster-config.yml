@@ -13,12 +13,16 @@ partitions_per_device: 4
 client_instance_type: "{{ cluster_instance_type }}"
 aerospike_client_per_az_count: 1
 
-# Aerospike monitorign type
+# Aerospike monitoring type
 monitoring_instance_type: "{{ cluster_instance_type }}"
 
 # Spark worker count
 spark_instance_type: "{{ cluster_instance_type }}"
 spark_worker_per_az_count: 1
+
+# Kafka instance type & number
+kafka_instance_type: "{{ cluster_instance_type }}"
+kafka_worker_per_az_count: 1
 
 # Installation configuration
 # ===================================
@@ -41,6 +45,9 @@ all_flash: false
 
 # Monitoring
 monitoring_enabled: true
+
+# Kafka Connect
+kafka_connect_enabled: false
 
 # Version number
 aerospike_version: "latest" 

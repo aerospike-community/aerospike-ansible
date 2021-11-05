@@ -94,3 +94,14 @@ namespace test {
 	}{% endif %} 
 }
 
+{% if kafka_connect_enabled %}xdr {
+   dc kafka {
+     node-address-port localhost 8080
+     connector true
+     namespace test {
+	ship-nsup-deletes true
+     }
+   }
+}
+{% endif %}
+

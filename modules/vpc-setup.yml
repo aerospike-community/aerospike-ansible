@@ -108,6 +108,11 @@
         - "{{ tls_service_port }}"
         - "{{ prometheus_exporter_port }}"    
         - "{{ spark_master_port }}"    
+        - "{{ kafka_port }}"
+        - "{{ zookeeper_clustering_port }}"
+        - "{{ zookeeper_election_port }}"
+        - "{{ zookeeper_client_port }}"
+
         cidr_ip: "{{ subnet_cidr }}"
     tags:
        group: "{{ vpc_tag }}"

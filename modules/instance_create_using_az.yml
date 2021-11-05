@@ -16,9 +16,9 @@
     ec2_ami_info:
 
       region: "{{ aws_region }}"     
-      owners: "{{ os_config['ami_owner'] }}"        
+      owners: "{{ kafka_ami_owner if instance_tag == kafka_tag else os_config['ami_owner'] }}"        
       filters:
-        name: "{{ os_config['ami_locator_string'] }}"
+        name: "{{ kafka_ami_locator_string if instance_tag == kafka_tag else os_config['ami_locator_string'] }}"
     register: ami_list
 
   - name: Get the latest AMI

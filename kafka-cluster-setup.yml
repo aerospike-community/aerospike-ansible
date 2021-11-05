@@ -1,0 +1,114 @@
+---
+- name: Create a Kafka cluster
+  hosts: local
+  connection: local
+  gather_facts: no
+  vars:
+    instance_tag: "{{ kafka_tag }}"
+    instance_count: "{{ kafka_worker_per_az_count }}"
+    instance_function: kafka
+    az_list: "{{ cluster_az_list }}"
+    instance_type: "{{ kafka_instance_type }}"
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars
+
+  - name: "Setup {{ instance_function }} instance vars"
+    include_vars: modules/instance-setup-vars.yml
+
+  - name: "Setup {{ instance_function }} instances"
+    import_tasks: modules/instance-setup.yml
+
+  - meta: refresh_inventory
+
+- name: "Kafka"
+  hosts: "{{ kafka_tag }}"
+  remote_user: "{{ os_config['remote_user'] }}"
+  become: yes
+  vars_files:
+  - vars/cluster-config.yml
+  - vars/constants.yml
+  - vars/os-level-config.yml   
+  - vars/kafka-vars.yml 
+  tasks:
+  - name: Install Java (pre-req for Kafka install)
+    package:
+      name:
+        - "{{ os_config['java_package_name'] }}"
+      state: present
+    become: yes
+
+- name: "Kafka"
+  hosts: "{{ kafka_tag }}"
+  remote_user: "{{ os_config['remote_user'] }}"
+  become: yes
+  vars:
+    zookeeper_servers: "{{ groups[kafka_tag] }}"
+    # Each Kafka broker needs a distinct id
+    kafka_broker_id: "{{ groups[kafka_tag].index(inventory_hostname) + 1}}"     
+    # Each Zookeeper server needs a distinct id    
+    zookeeper_id: "{{ groups[kafka_tag].index(inventory_hostname) + 1}}"     
+  vars_files:
+  - vars/cluster-config.yml
+  - vars/constants.yml
+  - vars/os-level-config.yml    
+  - vars/kafka-vars.yml   
+  roles:
+    - sleighzy.kafka
+    - sleighzy.zookeeper
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars
+
+  - name: Get host group instance info (required for zoo.cfg)
+    delegate_to: localhost
+    become: no 
+    ec2_instance_info:
+      region: "{{ aws_region }}"
+      filters:
+        instance-state-name: [ "pending", "running" ]  
+        "tag:group": "{{ kafka_tag }}"   
+    register: instance_info
+  
+  - name: "Create zoo.cfg modification script - required for clustering"
+    template:
+      src: "assets/zoo.cfg.sh.j2"
+      dest: "/tmp/zoo.cfg.sh"
+      force: yes
+      mode: 0755
+
+  - name: "Modify zoo.cfg"
+    shell: |
+      /tmp/zoo.cfg.sh
+      rm /var/lib/kafka/logs/meta.propeties
+      sudo service zookeeper restart
+
+  - name: "Restart Kafka"
+    shell: |
+      sudo service kafka restart
+
+  - name: "Create {{ default_kafka_topic }} topic if not already created"
+    shell: |
+      /opt/kafka/bin/kafka-topics.sh --create --topic {{ default_kafka_topic }} --bootstrap-server localhost:9092 --if-not-exists
+
+- name: Install Aerospike Kafka Connect
+  hosts: "{{ cluster_tag }}"
+  gather_facts: true
+  become: yes
+  remote_user: "{{ os_config['remote_user'] }}"
+  vars_files:
+  - vars/cluster-config.yml
+  - vars/constants.yml
+  - vars/os-level-config.yml
+  tasks:
+  - name: Import configuration properties
+    include_vars: 
+      dir: vars
+    
+  - name: Get service facts
+    service_facts:
+
+  - import_tasks: modules/kafka-connect-install.yml
+    when: kafka_connect_enabled
