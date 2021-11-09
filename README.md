@@ -209,7 +209,7 @@ asinfo --tls-enable --tls-name=aerospike_ansible_demo_cluster --tls-cafile=/etc/
 
 ```ansible-playbook spark-cluster-setup.yml``` will create a Spark cluster, enabled with Aerospike Spark Connect. The playbook sets up **spark_worker_per_az_count** instances of type **spark_instance_type** in each of the **cluster_az_list** availability zones.
 
-The following can be set in ```vars\spark-vars.yml```
+The following can be set in ```vars/spark-vars.yml```
 
 - **scala_version** 
 - **spark_version**
@@ -221,6 +221,49 @@ Note these will change over time. **spark_version** in particular will need modi
 At [Aerospike Connect for Spark](https://dev.to/aerospike/using-aerospike-connect-for-spark-3poi) you can find an article going through this setup process in detail, including a full, at scale example. It's a 5 minute read.
 
 Note that the Spark web ports (8080 & 8081) are locked to 'your' IP address. If you want to lock to a different address range, uncomment ```public_port_access_cidr``` in ```vars/aws-config.yml``` and change to the required range.
+
+## Aerospike Connect for Kafka
+
+```ansible-playbook kafka-cluster-setup.yml``` will create a Kafka cluster and will configure and install Aerospike Kafka Connect. The playbook sets up **kafka_worker_per_az_count** instances of type **kafka_instance_type** in each of the **cluster_az_list** availability zones.
+
+The following can be set in ```vars/kafka-vars.yml```
+
+- **kafka_version**
+- **kafka_connect_product_version**
+- **default_kafka_topic** (set to aerospike by default)
+
+You need to have the following Ansible roles installed - sleighzy.zookeeper & sleighzy.kafka. To do this run
+
+```ansible-galaxy install sleighzy.zookeeper sleighzy.kafka```
+
+In ```vars/cluster-config.yml``` both Aerospike Enterprise and Kafka Connect must be enabled so make sure you the following set
+
+```
+kafka_connect_enabled: true
+enterprise: true
+```
+
+To test, log into a Kafka host and watch the ```aerospike``` topic
+
+```
+./scripts/kafka-quick-ssh.sh 
+/opt/kafka/bin/kafka-console-consumer.sh --topic aerospike --bootstrap-server localhost:9092
+```
+
+Now log into an Aerospike host and insert a record
+
+```
+./scripts/cluster-quick-ssh.sh 
+aql
+insert into test(PK,value) values(1,1)
+```
+
+You should see the following message from Kafka in the console consumer window
+
+```
+{"msg":"write","key":["test",null,"pEPwXQXZYiArWau0Aq+uFzfb9mo=",null],"gen":1,"exp":0,"lut":1636468874425,"bins":[{"name":"value","type":"int","value":1}]}
+
+```
 
 ## SSH
 
