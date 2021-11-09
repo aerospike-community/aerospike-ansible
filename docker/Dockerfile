@@ -38,6 +38,8 @@ chown -R $RUN_TIME_USER:$RUN_TIME_GROUP $AEROSPIKE_RUN_DIR && \
 echo "IdentitiesOnly=yes" >> $AEROSPIKE_RUN_DIR/.ssh/config && \
 chmod 644 $AEROSPIKE_RUN_DIR/.ssh/config
 
+RUN ansible-galaxy role install sleighzy.zookeeper sleighzy.kafka -p $AEROSPIKE_RUN_DIR/.ansible/roles
+
 # Clone the Aerospike Ansible project
 # ==================================================================================
 
