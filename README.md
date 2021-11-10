@@ -74,6 +74,7 @@ Everything you are likely to want to change can be found in  ```vars/cluster-con
 - **strong_consistency** - default = false. If true ```aerospike.conf``` will be appropriately modified. The roster will be automatically set for you, with rack awareness, assuming each subnet constitutes a separate 'rack'
 - **all_flash** - default = false. If true, first partition on each disk, so (1 / partitions_per_device) of the available space, will be allocated for index on device. Both this and partition-tree-sprigs will usually require custom setting. For accurate sizing consult [all flash sizing](https://www.aerospike.com/docs/operations/configure/namespace/index/index.html#flash-index-calculations-summary). You can also consult [Automated All Flash Setup](https://dev.to/aerospike/automated-aerospike-all-flash-setup-3ho6)
 - **monitoring_enabled** - default = false. If true the Aerospike Prometheus agent will be installed, configured and started on the cluster nodes.
+- **kafka_enabled** - default = false. If true, install Kafka Connect on each Aerospike node & configure the cluster so's it is correctly linked to Kafka Connect.
 - **aerospike_distribution** - default = el6. Determines the distribution used.
 - **aerospike_version** - default = latest
 - **ami_locator_string** - the latest version of the AMZN2 AMI is used ( dynamically looked up). Other builds can be used by modifying this string. 
@@ -81,12 +82,9 @@ Everything you are likely to want to change can be found in  ```vars/cluster-con
 - **aerospike_mem_pct** - fraction of available memory to allocate to the 'test namespace'. Default = 80%
 - **feature_key** - path for an Enterprise feature key. Undefined by default so the setup works out of the box.
 - **partition_tree_sprigs** - partition tree sprig count - used if defined (undefined by default). See [Automated All Flash Setup](https://dev.to/aerospike/automated-aerospike-all-flash-setup-3ho6) for more detail
-
 - **client_instance_type** - instance type used for the Aerospike java client - defaults to 
 - **aerospike_client_per_az_count** - clients per az in **client_az_list**
-
 - **monitoring_instance_type** - instance type used for monitoring instance - defaults to **cluster_instance_type**
-
 - **spark_instance_type** - instance type used for Spark workers - defaults to **cluster_instance_type**
 - **spark_worker_per_az_count** - spark workers per az in **cluster_az_list**
 
@@ -264,6 +262,8 @@ You should see the following message from Kafka in the console consumer window
 {"msg":"write","key":["test",null,"pEPwXQXZYiArWau0Aq+uFzfb9mo=",null],"gen":1,"exp":0,"lut":1636468874425,"bins":[{"name":"value","type":"int","value":1}]}
 
 ```
+
+A recommended approach is to use the pre-built Ansible client container, particularly if there is any difficulty setting up the Ansible pre-requisites - see [this README](docker/README.md) for details.
 
 ## SSH
 
