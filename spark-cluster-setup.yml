@@ -121,6 +121,7 @@
   - vars/os-level-config.yml  
   tasks:
   - name: Start Master
+    become: yes
     shell: |
       set -e
       /spark/sbin/stop-master.sh
@@ -151,6 +152,7 @@
     register: spark_info
 
   - name: Start agents
+    become: yes
     shell: |
       set -e    
       /spark/sbin/stop-slave.sh 
