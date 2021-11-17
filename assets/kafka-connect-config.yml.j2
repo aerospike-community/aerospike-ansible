@@ -11,7 +11,8 @@ logging:
   file: /var/log/aerospike-kafka-outbound/aerospike-kafka-outbound.log
  
 format:
-  mode: json
+  mode: flat-json
+  metadata-key: metadata
  
 routing:
   mode: static
