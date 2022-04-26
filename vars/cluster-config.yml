@@ -50,7 +50,7 @@ monitoring_enabled: true
 kafka_connect_enabled: false
 
 # Version number
-aerospike_version: "latest" 
+aerospike_version: "5.7.0.17" 
 # Use full version number e.g. 4.8.0.8 'latest' is also recognized. 
 
 # Operating system - use ubuntu_os or amzn_linux_os inside the curly braces
