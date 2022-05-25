@@ -53,6 +53,9 @@ kafka_connect_enabled: false
 aerospike_version: "latest" 
 # Use full version number e.g. 4.8.0.8 'latest' is also recognized. 
 
+# Client version number
+aerospike_tools_version: "7.0.3"
+
 # Operating system - use ubuntu_os or amzn_linux_os inside the curly braces
 # This will determine the Aerospike distribution and ami used
 # Also remote user

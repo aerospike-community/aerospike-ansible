@@ -20,6 +20,11 @@ download_file_name: "aerospike-{{ aerospike_edition }}-{{ aerospike_distribution
 download_file_dir: "{{ temp_directory }}"
 download_path: "{{ download_file_dir }}/{{ download_file_name }}"
 
+tools_download_prefix: "https://download.aerospike.com/artifacts/aerospike-tools/{{ aerospike_tools_version }}/"
+tools_file_name: "aerospike-tools-{{ aerospike_tools_version }}-{{ aerospike_distribution }}.tgz"
+tools_download_url: "{{ tools_download_prefix}}{{ tools_file_name }}"
+tools_download_file_dir: "{{ temp_directory }}"
+tools_download_path: "{{ tools_download_file_dir }}/{{ tools_file_name }}"
 
 # Names of files generated/used by the playbooks - leave as is
 # =======================================================

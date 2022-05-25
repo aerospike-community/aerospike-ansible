@@ -118,6 +118,36 @@
       chdir: "{{ ansible_env.HOME }}/aerospike-loader"
       cmd: "bash {{ ansible_env.HOME }}/aerospike-loader/build"
 
+  # Install tools
+  - name: Check whether download exists
+    stat:
+     path: "{{ download_path }}"
+    register: stat_download_path
+
+  - name: Download Aerospike Tools if not already downloaded
+    get_url:
+     url: "{{ tools_download_url }}"
+     dest: "{{ tools_download_path }}"
+    when: not stat_download_path.stat.exists 
+
+  - name: Unpack installer
+    unarchive:
+     remote_src: "yes"
+     src: "{{ tools_download_path }}"
+     dest: "{{ tools_download_file_dir }}"
+     list_files: true
+    register: result
+
+  - name: Get install directory
+    set_fact:
+     install_directory: "{{ result.files[0] }}"
+
+  - name: "Install Aerospike Tools version {{ aerospike_tools_version }}"
+    become: yes
+    command:
+     chdir: "{{ tools_download_file_dir }}/{{ install_directory }}"
+     cmd: "{{ tools_download_file_dir }}/{{ install_directory }}/asinstall"
+
   - block:
     - name: Copy CA cert to client host temporary directory
       copy: 
