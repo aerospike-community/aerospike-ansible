@@ -77,6 +77,7 @@ Everything you are likely to want to change can be found in  ```vars/cluster-con
 - **kafka_enabled** - default = false. If true, install Kafka Connect on each Aerospike node & configure the cluster so's it is correctly linked to Kafka Connect.
 - **aerospike_distribution** - default = el6. Determines the distribution used.
 - **aerospike_version** - default = latest
+- **aerospike_tools_version** - default = 7.0.3. Determines the version of Aerospike Tools installed on the client machine
 - **ami_locator_string** - the latest version of the AMZN2 AMI is used ( dynamically looked up). Other builds can be used by modifying this string. 
 - **replication_factor** - default = 2
 - **aerospike_mem_pct** - fraction of available memory to allocate to the 'test namespace'. Default = 80%
