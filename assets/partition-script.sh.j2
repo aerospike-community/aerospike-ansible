@@ -37,9 +37,11 @@ do
 		done
 		echo "Partitioning $NVME_DRIVE into $PARTITION_COUNT partitions"
 		sudo parted -a opt --script $PARTED_SCRIPT
+		# Seems to complete asynchronously so adding some sleep
+		sleep 5
 		for PARTITION in $(ls ${NVME_DRIVE}p*)
 		do
-			blkdiscard -z --length 8MiB $PARTITION
+			sudo blkdiscard -z --length 8MiB $PARTITION
 		done
 	fi
 done
