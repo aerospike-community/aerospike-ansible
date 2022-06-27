@@ -24,6 +24,10 @@ spark_worker_per_az_count: 1
 kafka_instance_type: "{{ cluster_instance_type }}"
 kafka_worker_per_az_count: 1
 
+# Presto instance type & number
+presto_instance_type: "{{ cluster_instance_type }}"
+presto_worker_per_az_count: 1
+
 # Installation configuration
 # ===================================
 

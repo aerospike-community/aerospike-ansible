@@ -1,0 +1,75 @@
+---
+# - name: Create a Presto cluster
+#   hosts: local
+#   connection: local
+#   gather_facts: no
+#   vars:
+#     instance_tag: "{{ presto_tag }}"
+#     instance_count: "{{ presto_worker_per_az_count }}"
+#     instance_function: presto
+#     az_list: "{{ cluster_az_list }}"
+#     instance_type: "{{ presto_instance_type }}"
+#   tasks:
+#   - name: Import configuration properties
+#     include_vars: 
+#       dir: vars
+
+#   - name: "Setup {{ instance_function }} instance vars"
+#     include_vars: modules/instance-setup-vars.yml
+
+#   - name: "Setup {{ instance_function }} instances"
+#     import_tasks: modules/instance-setup.yml
+
+#   - meta: refresh_inventory
+
+- name: "Presto"
+  hosts: "{{ presto_tag }}"
+  remote_user: "{{ os_config['remote_user'] }}"
+  become: yes
+  vars_files:
+  - vars/cluster-config.yml
+  - vars/constants.yml
+  - vars/os-level-config.yml   
+  - vars/presto-vars.yml 
+  tasks:
+  - name: Install Java (pre-req for Presto install)
+    package:
+      name:
+        - "{{ os_config['java_package_name'] }}"
+        - "uuid"
+        - "gcc"
+        - "openssl-devel"
+        - "bzip2-devel"
+        - "libffi-devel"
+        - "xz-devel"
+      state: present
+    become: yes
+
+  - name: "Install Starburst"
+    shell: |
+      set -e
+      cd /tmp
+      mkdir -p /var/presto/data
+      chmod 777 /var/presto/data
+      wget https://repo1.maven.org/maven2/com/facebook/presto/presto-server/0.273.1/presto-server-0.273.1.tar.gz
+      gunzip presto-server-0.273.1.tar.gz
+      tar xvf presto-server-0.273.1.tar
+      cd presto-server-0.273.1
+      mkdir etc
+      cat > etc/node.properties <<EOF
+      node.environment=production
+      node.id=$(uuid)
+      node.data-dir=/var/presto/data
+      EOF
+      cat > etc/jvm.config <<EOF
+      -server
+      -Xmx16G
+      -XX:+UseG1GC
+      -XX:G1HeapRegionSize=32M
+      -XX:+UseGCOverheadLimit
+      -XX:+ExplicitGCInvokesConcurrent
+      -XX:+HeapDumpOnOutOfMemoryError
+      -XX:+ExitOnOutOfMemoryError      
+      EOF
+    become: yes    
+

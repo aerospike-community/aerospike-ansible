@@ -8,6 +8,8 @@ monitoring_tag: "{{ cluster_identifier }}_monitoring"
 spark_tag: "{{ cluster_identifier }}_spark"
 # Tag for Kafka instances
 kafka_tag: "{{ cluster_identifier }}_kafka"
+# Tag for Presto instances
+presto_tag: "{{ cluster_identifier }}_presto"
 
 # Downloading 
 aerospike_download_suffix: "/artifact"
