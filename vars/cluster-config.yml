@@ -29,7 +29,7 @@ kafka_worker_per_az_count: 1
 
 # Whether to use enterprise
 # Set to false by default so will run without features.conf
-enterprise: false
+enterprise: true
 
 # Whether to enable encryption at rest
 encryption_at_rest: false
@@ -50,11 +50,14 @@ monitoring_enabled: true
 kafka_connect_enabled: false
 
 # Version number
-aerospike_version: "latest" 
+aerospike_version: "5.7.0.17" 
 # Use full version number e.g. 4.8.0.8 'latest' is also recognized. 
 
 # Client version number
 aerospike_tools_version: "7.0.3"
+
+# Prometheus exporter version
+prometheus_exporter_version: "1.7.0"
 
 # Operating system - use ubuntu_os or amzn_linux_os inside the curly braces
 # This will determine the Aerospike distribution and ami used

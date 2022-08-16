@@ -26,6 +26,12 @@ tools_download_url: "{{ tools_download_prefix}}{{ tools_file_name }}"
 tools_download_file_dir: "{{ temp_directory }}"
 tools_download_path: "{{ tools_download_file_dir }}/{{ tools_file_name }}"
 
+prometheus_exporter_download_prefix: "https://download.aerospike.com/artifacts/aerospike-prometheus-exporter/{{ prometheus_exporter_version }}/"
+prometheus_exporter_file_name: "aerospike-prometheus-exporter-{{ prometheus_exporter_version }}.tar.gz"
+prometheus_exporter_download_url: "{{ prometheus_exporter_download_prefix}}{{ prometheus_exporter_file_name }}"
+prometheus_exporter_download_file_dir: "{{ temp_directory }}"
+prometheus_exporter_download_path: "{{ prometheus_exporter_download_file_dir }}/{{ prometheus_exporter_file_name }}"
+
 # Names of files generated/used by the playbooks - leave as is
 # =======================================================
 scripts_directory_name: scripts
