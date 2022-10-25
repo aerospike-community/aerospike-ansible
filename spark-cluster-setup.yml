@@ -92,12 +92,12 @@
 
   - name: Install Aerospike Spark Connect
     shell: |
-      set -e    
-      if [ ! -f /spark/jars/aerospike-spark-assembly-{{ aerospike_spark_connect_version }}.jar ]
+      set -e
+      if [ ! -f /spark/jars/ aerospike-spark-{{ aerospike_spark_connect_version }}_spark_{{ spark_version }}_{{ hadoop_version }}_allshaded.jar ]
       then
         cd /tmp
-        wget https://www.aerospike.com/enterprise/download/connectors/aerospike-spark/{{ aerospike_spark_connect_version }}/artifact/jar -O aerospike-spark-assembly-{{ aerospike_spark_connect_version }}.jar     
-        mv aerospike-spark-assembly-{{ aerospike_spark_connect_version }}.jar /spark/jars/            
+        wget https://www.aerospike.com/enterprise/download/connectors/aerospike-spark/{{ aerospike_spark_connect_version }}/artifact/jar -O aerospike-spark-{{ aerospike_spark_connect_version }}_spark_{{ spark_version }}_{{ hadoop_version }}_allshaded.jar
+        mv aerospike-spark-{{ aerospike_spark_connect_version }}_spark_{{ spark_version }}_{{ hadoop_version }}_allshaded.jar /spark/jars/
       fi
     become: yes
 
