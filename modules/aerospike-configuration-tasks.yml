@@ -42,7 +42,11 @@
       all_flash_array=($(ls /dev/nvme*p* | grep -v nvme0 | grep p1))
       for i in ${!all_flash_array[@]}
       do
-        mkfs.xfs -f ${all_flash_array[$i]}
+        # Format device if not already formatted
+        if [ -z "$(lsblk -f ${all_flash_array[$i]} | grep xfs)" ]
+        then
+                mkfs.xfs -f ${all_flash_array[$i]}
+        fi
         if [ ! -d /nvme_all_flash_${i} ]
         then
           mkdir /nvme_all_flash_${i}
