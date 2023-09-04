@@ -35,7 +35,7 @@
   - name: Install Java (pre-req for Kafka install)
     package:
       name:
-        - "{{ os_config['java_package_name'] }}"
+        - "{{ java_for_redhat }}"
       state: present
     become: yes
 
