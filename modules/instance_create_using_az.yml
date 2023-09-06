@@ -1,9 +1,9 @@
-- name: Get subnet for new instance
+- name: "Get subnet for new instance"
   set_fact:
     az: "{{ item }}"
   when: item is defined
 
-- name: Get subnet id
+- name: "Get subnet id"
   ec2_vpc_subnet_info:
     region: "{{ aws_region }}"               
     filters:
@@ -11,35 +11,34 @@
       availability-zone: "{{ aws_region }}{{az}}"
   register: vpc_subnets
 
-- block:
-  - name: "Get {{ os_config['os_name'] }} AMI"
-    ec2_ami_info:
+- name: "Get {{ os_config['os_name'] }} AMI"
+  ec2_ami_info:
 
-      region: "{{ aws_region }}"     
-      owners: "{{ kafka_ami_owner if instance_tag == kafka_tag else os_config['ami_owner'] }}"        
-      filters:
-        name: "{{ kafka_ami_locator_string if instance_tag == kafka_tag else os_config['ami_locator_string'] }}"
-    register: ami_list
-
-  - name: Get the latest AMI
-    set_fact:
-      most_recent_ami: >
-        {{ ami_list.images | sort(attribute='creation_date') | last }}    
-  when: most_recent_ami is not defined
-  
-- name: Start EC2 cluster instances
-  ec2:
     region: "{{ aws_region }}"     
-    assign_public_ip: "yes"
-    count_tag: 
-      group-plus-az: "{{ group_plus_az_tag_value }}"
+    owners: "{{ kafka_ami_owner if instance_tag == kafka_tag else os_config['ami_owner'] }}"        
+    filters:
+      name: "{{ kafka_ami_locator_string if instance_tag == kafka_tag else os_config['ami_locator_string'] }}"
+  register: ami_list
+
+- name: "Set most recent ami"    
+  set_fact:
+    most_recent_ami: "{{ ami_list.images | sort(attribute='creation_date') | last }}"    
+
+- name: "Start EC2 cluster instances"
+  ec2_instance:
+    region: "{{ aws_region }}"     
+    network:
+      assign_public_ip: true
+    filters:
+      "tag:Name": "group-plus-az"
+      "tag:Value": "{{ group_plus_az_tag_value }}" 
     exact_count: "{{ instance_count }}"     
-    image: "{{ most_recent_ami.image_id }}"
+    image_id: "{{ most_recent_ami.image_id }}"
     instance_type: "{{ instance_type }}"
     key_name: "{{ cluster_tag }}"
-    group_id: "{{ security_group.group_id }}"
+    security_group: "{{ security_group.group_id }}"
     vpc_subnet_id: "{{ subnet.id }}"
-    instance_tags:
+    tags:
        uber-group: "{{ cluster_identifier }}"
        group: "{{ instance_tag }}"
        group-plus-az: "{{ group_plus_az_tag_value }}"

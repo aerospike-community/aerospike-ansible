@@ -16,7 +16,7 @@ os_config_cache:
 
   amznlinux2:
     os_name: "Amazon Linux 2"    
-    java_package_name: "java-17-amazon-corretto.x86_64"
+    java_package_name: "java-17-amazon-corretto-devel.x86_64"
     ami_owner: "amazon"
     ami_locator_string: "amzn2-ami-hvm-2.0.*-x86_64-gp2"
     aerospike_distribution: "el7"
@@ -26,6 +26,9 @@ os_config_cache:
 
 required_prometheus_go_version: "1.14"
 required_prometheus_branch: "release-2.25"
+
+# Maven version
+maven_version: 3.9.4
 
 # Kafka needs to run on RedHat if using https://github.com/sleighzy/ansible-kafka
 kafka_ami_locator_string: "RHEL-8.4.0_HVM-*-x86_64-*-GP2"

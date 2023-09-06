@@ -63,16 +63,23 @@
       become: yes
     when: operating_system == ubuntu_os
 
-  - name: Install Java/git/sysstat/maven/screen
+  - name: Install Java/git/sysstat/screen
     package:
       name:
         - "{{ os_config['java_package_name'] }}"
         - git
         - sysstat
-        - maven
         - screen
       state: present
     become: yes
+
+    # At the time of writing, Aerospike Java client needs 3.1.1 maven to build, but yum only provides 3.0
+  - name: Get Maven
+    shell: |
+      set -e
+      cd {{ ansible_env.HOME }}
+      wget https://dlcdn.apache.org/maven/maven-3/{{ maven_version }}/binaries/apache-maven-{{ maven_version }}-bin.tar.gz
+      tar xvfz apache-maven-{{ maven_version }}-bin.tar.gz
 
   - name: Install Aerospike Java Client
     git:
@@ -88,7 +95,9 @@
     shell: |
       set -e
       cd {{ ansible_env.HOME }}/aerospike-client-java
-      export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which javadoc))))
+      export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
+      echo "export PATH={{ ansible_env.HOME }}/apache-maven-{{ maven_version }}/bin:\$PATH" >> {{ ansible_env.HOME }}/.bash_profile 
+      source {{ ansible_env.HOME }}/.bash_profile
       {{ ansible_env.HOME }}/aerospike-client-java/build_all
 
   - name: "Copy benchmarking config to client"
@@ -114,9 +123,10 @@
       repo: "https://github.com/aerospike/aerospike-loader.git"
 
   - name: Build asloader
-    command:
-      chdir: "{{ ansible_env.HOME }}/aerospike-loader"
-      cmd: "bash {{ ansible_env.HOME }}/aerospike-loader/build"
+    shell: |
+      cd {{ ansible_env.HOME }}/aerospike-loader
+      source {{ ansible_env.HOME }}/.bash_profile
+      {{ ansible_env.HOME }}/aerospike-loader/build
 
   # Install tools
   - name: Check whether download exists
