@@ -1,4 +1,4 @@
-FROM debian:stretch-slim 
+FROM debian:bullseye
 
 # Build varialbes - meaning should be clear
 # Placeholders have been provided for the aws access key and secret access key
@@ -17,11 +17,11 @@ ARG AWS_SECRET_ACCESS_KEY=XXXXXX
 # ==================================================================================
 
 RUN apt-get update
-RUN apt-get -y install python-pip curl unzip git vim
+RUN apt-get -y install python3-pip curl unzip git vim
 RUN pip install -U pip
 RUN pip install virtualenv boto boto3 ansible ec2
 RUN cd /tmp && \
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip" && \
 unzip awscliv2.zip && \
 ./aws/install && \
 cd -
