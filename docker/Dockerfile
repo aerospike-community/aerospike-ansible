@@ -19,12 +19,7 @@ ARG AWS_SECRET_ACCESS_KEY=XXXXXX
 RUN apt-get update
 RUN apt-get -y install python3-pip curl unzip git vim
 RUN pip install -U pip
-RUN pip install virtualenv boto boto3 ansible ec2
-RUN cd /tmp && \
-curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip" && \
-unzip awscliv2.zip && \
-./aws/install && \
-cd -
+RUN pip install virtualenv boto boto3 ansible ec2 awscli
 
 # Set up run time user
 # ==================================================================================
