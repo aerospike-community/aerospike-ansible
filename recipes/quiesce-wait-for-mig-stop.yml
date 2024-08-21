@@ -22,7 +22,7 @@
     shell: |
       set -e    
       asinfo -v 'quiesce:'
-      asadm -e "asinfo -v 'recluster:'"
+      asadm -e 'enable; asinfo -v "recluster:"'
 
       # Wait for migrations to complete
       while [[ $(asinfo -v 'cluster-stable:') =~ ^ERROR ]]
@@ -87,7 +87,7 @@
           exit 1
         fi
 
-        asadm {% if tls_enabled %}--tls-enable --tls-name={{ cluster_name }} --tls-cafile=/etc/aerospike/certs/ca.crt -p {{ tls_service_port }} {% endif %} -e 'asinfo -v "recluster:"'
+        asadm {% if tls_enabled %}--tls-enable --tls-name={{ cluster_name }} --tls-cafile=/etc/aerospike/certs/ca.crt -p {{ tls_service_port }} {% endif %} -e 'enable; asinfo -v "recluster:"'
         $ASINFO -v 'roster:'
         echo "Roster set and reclustered"
     when: sc
