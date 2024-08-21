@@ -9,7 +9,7 @@ spark_tag: "{{ cluster_identifier }}_spark"
 # Tag for Kafka instances
 kafka_tag: "{{ cluster_identifier }}_kafka"
 
-# Downloading 
+# Downloading
 aerospike_download_suffix: "/artifact"
 
 aerospike_download_prefix: "http://www.aerospike.com/{{ 'enterprise/' if enterprise else ''}}download/server/"
@@ -37,9 +37,8 @@ prometheus_exporter_download_path: "{{ prometheus_exporter_download_file_dir }}/
 scripts_directory_name: scripts
 aerospike_conf_file_name: aerospike.conf
 ip_address_script_name: ip-address-list.sh
-quick_ssh_script_name: quick-ssh.sh 
+quick_ssh_script_name: quick-ssh.sh
 partition_script_name: partition-script.sh
-
 
 # Prometheus / Grafana
 prometheus_service_name: "prometheus.service"
@@ -55,7 +54,7 @@ encryption_key_file_path: "/etc/aerospike/encryption-at-rest-key.dat"
 
 # TLS
 tls_name: "{{ cluster_name }}"
-local_certs_directory: "assets/certificates/certs" 
+local_certs_directory: "assets/certificates/certs"
 certificates_directory: /etc/aerospike/certs
 private_key_directory: "{{ certificates_directory }}/private"
 
@@ -93,4 +92,5 @@ ansible_ssh_private_key_file: "{{cluster_identifier}}.aws.pem"
 # Other
 cluster_name: aerospike_ansible_demo_cluster
 aerospike_service_name: "aerospike.service"
+aerospike_service_enabled: false
 temp_directory: "/tmp"

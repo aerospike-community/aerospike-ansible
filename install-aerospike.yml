@@ -5,137 +5,139 @@
   become: yes
   remote_user: "{{ os_config['remote_user'] }}"
   vars_files:
-  - vars/cluster-config.yml
-  - vars/constants.yml
-  - vars/os-level-config.yml
+    - vars/cluster-config.yml
+    - vars/constants.yml
+    - vars/os-level-config.yml
   tasks:
-  - name: Import configuration properties
-    include_vars: 
-      dir: vars
-    
-  - name: Get service facts
-    service_facts:
+    - name: Import configuration properties
+      include_vars:
+        dir: vars
 
-  - block:
-    - name: Installation previously completed message
-      debug: 
-        msg: "Aerospike is already installed - not re-installing"
-
-    - meta: end_host
-    when: hostvars[inventory_hostname].services[aerospike_service_name] is defined
-
-  - block:
-    - debug: 
-        msg: "Aerospike service is not installed - executing install steps"
+    - name: Get service facts
+      service_facts:
 
     - block:
-      - name: If Ubuntu, update package cache
-        shell: |
-          sudo apt update
-      when: operating_system == ubuntu_os
+        - name: Installation previously completed message
+          debug:
+            msg: "Aerospike is already installed - not re-installing"
+
+        - meta: end_host
+      when: hostvars[inventory_hostname].services[aerospike_service_name] is defined
 
     - block:
-      - name: "stat {{ feature_key_path }}"
-        local_action: "stat path={{ feature_key_path }}"
-        become: no
-        register: feature_key_meta
+        - debug:
+            msg: "Aerospike service is not installed - executing install steps"
 
-      - name: "Check feature key {{ feature_key_path }} exists"
-        fail:
-          msg: "Specified feature key {{ feature_key_path }} not found"
-        when: not feature_key_meta.stat.exists    
-      when: enterprise 
+        - block:
+            - name: If Ubuntu, update package cache
+              shell: |
+                sudo apt update
+          when: operating_system == ubuntu_os
 
-    - name: Check whether download exists
-      stat:
-       path: "{{ download_path }}"
-      register: stat_download_path
+        - block:
+            - name: "stat {{ feature_key_path }}"
+              local_action: "stat path={{ feature_key_path }}"
+              become: no
+              register: feature_key_meta
 
-    - name: Download Aerospike {{ 'Enterprise' if enterprise else 'Community' }}, version = {{ aerospike_version }}, distribution = {{ aerospike_distribution }} if not already downloaded
-      get_url:
-       url: "{{ download_url }}"
-       dest: "{{ download_path }}"
-      when: not stat_download_path.stat.exists 
+            - name: "Check feature key {{ feature_key_path }} exists"
+              fail:
+                msg: "Specified feature key {{ feature_key_path }} not found"
+              when: not feature_key_meta.stat.exists
+          when: enterprise
 
-    - name: Unpack installer
-      unarchive:
-       remote_src: "yes"
-       src: "{{ download_path }}"
-       dest: "{{ download_file_dir }}"
-       list_files: true
-      register: result
+        - name: Check whether download exists
+          stat:
+            path: "{{ download_path }}"
+          register: stat_download_path
 
-    - name: Get install directory
-      set_fact:
-       install_directory: "{{ result.files[0] }}"
+        - name: Download Aerospike {{ 'Enterprise' if enterprise else 'Community' }}, version = {{ aerospike_version }}, distribution = {{ aerospike_distribution }} if not already downloaded
+          get_url:
+            url: "{{ download_url }}"
+            dest: "{{ download_path }}"
+          when: not stat_download_path.stat.exists
 
-    - name: "Install Aerospike with strong consistency = {{ strong_consistency }}, tls = {{ tls_enabled }}, encryption at rest = {{ encryption_at_rest }}"
-      command:
-        chdir: "{{ download_file_dir }}/{{ install_directory }}"
-        cmd: "{{ download_file_dir }}/{{ install_directory }}/asinstall"
+        - name: Unpack installer
+          unarchive:
+            remote_src: "yes"
+            src: "{{ download_path }}"
+            dest: "{{ download_file_dir }}"
+            list_files: true
+          register: result
 
-    - name: "Create {{ partition_script_name }} script"
-      template:
-        src: "assets/{{ partition_script_name }}.j2"
-        dest: "/tmp/{{ partition_script_name }}"
-        mode: 0755
+        - name: Get install directory
+          set_fact:
+            install_directory: "{{ result.files[0] }}"
 
-    - name: "Partition nvme drives"
-      shell: "/tmp/{{ partition_script_name }}"
+        - name: "Install Aerospike with strong consistency = {{ strong_consistency }}, tls = {{ tls_enabled }}, encryption at rest = {{ encryption_at_rest }}"
+          command:
+            chdir: "{{ download_file_dir }}/{{ install_directory }}"
+            cmd: "{{ download_file_dir }}/{{ install_directory }}/asinstall"
 
-    - name: aerospike.conf
-      import_tasks: modules/aerospike-configuration-tasks.yml
-    
-    - block:
-      - name: Feature key
-        copy:
-          src: "{{ feature_key_path }}"
-          dest: /etc/aerospike/features.conf
-          owner: root
-          group: root
-          mode: '0644'        
-      when: enterprise 
+        - name: "Create {{ partition_script_name }} script"
+          template:
+            src: "assets/{{ partition_script_name }}.j2"
+            dest: "/tmp/{{ partition_script_name }}"
+            mode: 0755
 
-    - import_tasks: modules/prometheus-exporter-install.yml
-      when: monitoring_enabled
+        - name: "Partition nvme drives"
+          shell: "/tmp/{{ partition_script_name }}"
 
-    # asadm requires python3 & roster set below requires asadm - so need to do install here
-    - name: Install python3
+        - name: aerospike.conf
+          import_tasks: modules/aerospike-configuration-tasks.yml
+
+        - block:
+            - name: Feature key
+              copy:
+                src: "{{ feature_key_path }}"
+                dest: /etc/aerospike/features.conf
+                owner: root
+                group: root
+                mode: "0644"
+          when: enterprise
+
+        - import_tasks: modules/prometheus-exporter-install.yml
+          when: monitoring_enabled
+
+        # asadm requires python3 & roster set below requires asadm - so need to do install here
+        - name: Install python3
+          package:
+            name:
+              - python3
+            state: latest
+          become: yes
+
+        - name: Start service aerospike
+          ansible.builtin.service:
+            name: aerospike
+            state: started
+            enabled: "{{ aerospike_service_enabled }}"
+
+        - block:
+            - name: Copy roster set script
+              template:
+                src: "assets/strong-consistency/roster-set.sh.j2"
+                dest: "/tmp/roster-set.sh"
+                mode: "0755"
+
+            - name: "Set roster"
+              shell: "/tmp/roster-set.sh"
+
+          when: strong_consistency
+
+        - name: Installation complete message
+          debug:
+            msg: "Aerospike install complete"
+
+      when: ( hostvars[inventory_hostname].services[aerospike_service_name] is not defined ) or not(hostvars[inventory_hostname].services[aerospike_service_name].state == 'running')
+
+    # May not be available as standard - this is the case on GCP
+    - name: Install sysstat
       package:
         name:
-          - python3
+          - sysstat
         state: latest
       become: yes
-
-    - name: Start Aerospike service
-      shell: 
-        cmd: "service aerospike start"
-
-    - block:      
-      - name: Copy roster set script
-        template:
-          src: "assets/strong-consistency/roster-set.sh.j2"
-          dest: "/tmp/roster-set.sh"
-          mode: "0755"
-
-      - name: "Set roster"
-        shell: "/tmp/roster-set.sh"
-
-      when: strong_consistency 
-
-    - name: Installation complete message
-      debug: 
-        msg: "Aerospike install complete"
-
-    when: ( hostvars[inventory_hostname].services[aerospike_service_name] is not defined ) or not(hostvars[inventory_hostname].services[aerospike_service_name].state == 'running')
-
-  # May not be available as standard - this is the case on GCP
-  - name: Install sysstat
-    package:
-      name:
-        - sysstat
-      state: latest
-    become: yes
 
 - name: Update monitoring if enabled
   hosts: "{{ monitoring_tag }}"
@@ -143,22 +145,22 @@
   become: yes
   remote_user: "{{ os_config['remote_user'] }}"
   vars_files:
-  - vars/cluster-config.yml
-  - vars/constants.yml
-  - vars/os-level-config.yml  
+    - vars/cluster-config.yml
+    - vars/constants.yml
+    - vars/os-level-config.yml
   tasks:
-  - name: Import configuration properties
-    include_vars: 
-      dir: vars
-    
-  - name: Get service facts
-    service_facts:
+    - name: Import configuration properties
+      include_vars:
+        dir: vars
 
-  # When Prometheus is installed, we update the config file - might be necessary as we have added nodes
-  - import_tasks: modules/prometheus-configuration.yml
-    when: hostvars[inventory_hostname].services[prometheus_service_name] is defined
+    - name: Get service facts
+      service_facts:
 
-  - name: Restart prometheus
-    service:
-      name: prometheus
-      state: restarted
+    # When Prometheus is installed, we update the config file - might be necessary as we have added nodes
+    - import_tasks: modules/prometheus-configuration.yml
+      when: hostvars[inventory_hostname].services[prometheus_service_name] is defined
+
+    - name: Restart prometheus
+      service:
+        name: prometheus
+        state: restarted
