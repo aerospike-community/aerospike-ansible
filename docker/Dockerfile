@@ -1,4 +1,4 @@
-FROM debian:bullseye
+FROM debian:bullseye@sha256:a50c3ed0200d2f58736c3bb02b4a9f174f3d6d3bd866f2f640375f1e82c61348
 
 # Build varialbes - meaning should be clear
 # Placeholders have been provided for the aws access key and secret access key
